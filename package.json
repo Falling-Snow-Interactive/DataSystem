@@ -12,5 +12,6 @@
   },
   "hideInEditor": false,
   "dependencies": {
+      "com.fallingsnowinteractive.localization": "0.0.1"
   }
 }

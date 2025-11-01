@@ -1,0 +1,16 @@
+{
+    "name": "Fsi.DataSystem.Runtime",
+    "rootNamespace": "Fsi.DataSystem",
+    "references": [
+        "GUID:f90ad862727b74b76a2c5e0dcf9510f7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
