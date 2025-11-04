@@ -4,7 +4,7 @@ namespace Fsi.DataSystem
 {
     public interface IFsiData<out T>
     {
-        public T Id { get; }
+        public T ID { get; }
         
         public LocEntry LocName { get; }
         public string Name => LocName.GetLocalizedString("no_loc_name");

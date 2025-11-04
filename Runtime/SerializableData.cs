@@ -12,7 +12,7 @@ namespace Fsi.DataSystem
 
         [SerializeField]
         private T id;
-        public T Id => id;
+        public T ID => id;
         
         [Header("Localization")]
         

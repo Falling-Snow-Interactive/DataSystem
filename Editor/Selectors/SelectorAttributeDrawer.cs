@@ -16,14 +16,14 @@ namespace Fsi.DataSystem.Selectors
         {
             VisualElement root = new();
             List<TType> data = GetData(); 
-            List<string> names = data.Select(d => d.Id.ToString()).ToList();
+            List<string> names = data.Select(d => d.ID.ToString()).ToList();
             names.Insert(0, "None");
 
             int selectedIndex = 0;
             if (property.objectReferenceValue != null
                 && property.objectReferenceValue is ISelectorData<TId> t)
             {
-                selectedIndex = names.IndexOf(t.Id.ToString());
+                selectedIndex = names.IndexOf(t.ID.ToString());
             }
 
             ObjectField objectField = new("Data")
