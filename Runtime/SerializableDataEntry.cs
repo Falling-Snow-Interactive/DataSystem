@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Fsi.DataSystem
 {
     [Serializable]
-    public class SerializableData<T> : IFsiData<T>, ISelectorData<T>
+    public class SerializableDataEntry<T> : IDataEntry<T>, ISelectorData<T>
     {
         [Header("Data")]
 
@@ -23,5 +23,11 @@ namespace Fsi.DataSystem
         [SerializeField]
         private LocEntry locDescription;
         public LocEntry LocDesc => locDescription;
+
+        public override string ToString()
+        {
+            string s = id.ToString();
+            return s;
+        }
     }
 }
