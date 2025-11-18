@@ -1,3 +1,13 @@
 fileFormatVersion: 2
 guid: 29e3a51e33d84b7ea62c1d8eb0c51e73
-timeCreated: 1763393611
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - popoutTexture: {fileID: 2800000, guid: be61e835243bb4e7faedd3a69045525b, type: 3}
+  - selectTexture: {fileID: 2800000, guid: 8cff1f88180e34de7b65640e10b2cfef, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

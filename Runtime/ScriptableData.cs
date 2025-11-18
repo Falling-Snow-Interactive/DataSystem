@@ -10,7 +10,7 @@ namespace Fsi.DataSystem
     /// Base ScriptableObject data entry that provides an ID and localized name/description for use
     /// in data-driven systems and selectors.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type used to ID the data objects.</typeparam>
     public abstract class ScriptableData<T> : ScriptableObject, IDataEntry<T>, ISelectorData<T>, ISerializationCallbackReceiver
     {
         #region Asset Menu Constants

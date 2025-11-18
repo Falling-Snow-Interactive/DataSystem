@@ -1,95 +1,65 @@
 using System;
-using Fsi.Ui.Spacers;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEditor.AssetDatabase;
 
 namespace Fsi.DataSystem
 {
     [CustomEditor(typeof(ScriptableData<>), true)]
     public class ScriptableDataEditor : Editor
     {
-        #region Constants
-        
-        private const float IconSize = 24f;
-        
-        private const string PopoutIcon = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
-        private const string SelectIcon = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
+        [SerializeField]
+        private Texture2D popoutTexture;
 
-        private const float ImagePadding = 4f;
+        [SerializeField]
+        private Texture2D selectTexture;
         
-        #endregion
-
-        private Toggle pluralToggle;
+        // Toolbar
+        private Toolbar toolbar;
         
         public override VisualElement CreateInspectorGUI()
         {
             VisualElement root = new();
 
-            VisualElement header = CreateHeader();
-            root.Add(header);
+            toolbar = new Toolbar();
+            root.Add(toolbar);
             
-            root.Add(new Spacer());
+            AddToolbarButton(popoutTexture, "Popout", OnPopoutButton);
+            AddToolbarButton(selectTexture, "Select", OnSelectButton);
             
             InspectorElement.FillDefaultInspector(root, serializedObject, this);
             
             return root;
         }
 
-        #region Create Header
-        
-        // TODO - This can probably use the toolbar stuff actually. Let's try that.
-        private VisualElement CreateHeader()
+        #region Toolbar
+
+        // Subclasses can add their own buttons if they want to.
+        protected void AddToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
         {
-            VisualElement header = new()
-                                   {
-                                       style =
-                                       {
-                                           height = IconSize,
+            if (toolbar == null)
+            {
+                Debug.LogWarning($"Toolbar does not exist on {name}.", target);
+                return;
+            }
 
-                                           flexDirection = FlexDirection.Row,
-                                       }
-                                   };
-
-            // Popout
-            Texture2D popoutIcon = LoadAssetAtPath<Texture2D>(PopoutIcon);
-            VisualElement popoutButton = CreateHeaderButton(popoutIcon, "Popout", OnPopoutButton);
-            header.Add(popoutButton);
-            
-            // Select
-            Texture2D selectIcon = LoadAssetAtPath<Texture2D>(SelectIcon);
-            VisualElement selectButton = CreateHeaderButton(selectIcon, "Select", OnSelectButton);
-            header.Add(selectButton);
-
-            return header;
+            VisualElement b = CreateToolbarButton(icon, tooltip, onClickedAction);
+            toolbar.Add(b);
         }
 
-        private static VisualElement CreateHeaderButton(Texture2D icon, string tooltip, Action onClickedAction)
+        private static VisualElement CreateToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
         {
-            Button button = new()
-                                  {
-                                      tooltip = tooltip,
-                                      style =
-                                      {
-                                          width = IconSize,
-                                          height = IconSize,
-                                          
-                                          paddingTop = ImagePadding,
-                                          paddingRight = ImagePadding,
-                                          paddingBottom = ImagePadding,
-                                          paddingLeft = ImagePadding,
-                                          
-                                          alignContent = Align.Center,
-                                      }
-                                  };
-            
-            Image image = new() { image = icon, };
-            button.Add(image);
-            
-            button.clicked += onClickedAction;
-            
+            ToolbarButton button = new(onClickedAction)
+                                   {
+                                       tooltip = tooltip,
+                                       iconImage = icon,
+                                       
+                                       style =
+                                       {
+                                           height = new StyleLength(StyleKeyword.Auto),
+                                       }
+                                   };
             return button;
         }
         
