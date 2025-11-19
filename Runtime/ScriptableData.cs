@@ -48,11 +48,15 @@ namespace Fsi.DataSystem
         #endregion
         
         #region Properties
-        
+
         /// <summary>
         /// Gets the unique identifier for this data entry.
         /// </summary>
-        public T ID => id;
+        public T ID
+        {
+            get => id;
+            protected set => id = value;
+        }
         
         /// <summary>
         /// Gets the localization entry used for this data entry's display name.
@@ -121,9 +125,13 @@ namespace Fsi.DataSystem
         
         public override string ToString()
         {
-            return id.ToString();
+            return ID == null ? "None" :  ID.ToString();
         }
         
         #endregion
+    }
+
+    public class ScriptableDataImpl<T> : ScriptableData<T>
+    {
     }
 }
