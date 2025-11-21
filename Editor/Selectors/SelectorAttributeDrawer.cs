@@ -61,6 +61,15 @@ namespace Fsi.DataSystem.Selectors
                     flexGrow = 1,
                 },
             };
+
+            dropdown.RegisterValueChangedCallback(evt =>
+                                                  {
+                                                      int index = dropdown.index;
+                                                      index -= 1;
+                                                      
+                                                      property.objectReferenceValue = index == -1 ? null : GetEntries()[index];
+                                                      property.serializedObject.ApplyModifiedProperties();
+                                                  });
             
             selection.Add(dropdown);
 
