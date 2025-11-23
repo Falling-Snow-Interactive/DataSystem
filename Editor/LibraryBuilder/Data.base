@@ -1,0 +1,11 @@
+using Fsi.DataSystem;
+using UnityEngine;
+
+namespace [Namespace]
+{
+	[CreateAssetMenu(menuName = "[Project]/[Menu]/Data")]
+	public class [Name]Data : ScriptableData<ID>
+	{
+		
+	}
+}

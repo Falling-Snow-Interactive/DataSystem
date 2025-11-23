@@ -2,7 +2,7 @@ using Fsi.Localization;
 
 namespace Fsi.DataSystem
 {
-    public interface IDataEntry<out T>
+    public interface IDataEntry<T>
     {
         public T ID { get; }
         

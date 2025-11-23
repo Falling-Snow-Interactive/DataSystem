@@ -88,7 +88,8 @@ namespace Fsi.DataSystem
         /// Gets the localized description text for this data entry.
         /// </summary>
         public string Desc => LocDesc.GetLocalizedString("no_loc_desc");
-        
+
+
         #endregion
         
         #region Equality & Operators

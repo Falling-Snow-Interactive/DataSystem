@@ -1,0 +1,11 @@
+using System;
+using Fsi.DataSystem.Libraries;
+
+namespace [Namespace]
+{
+	[Serializable]
+	public class [Name]Library : Library<[ID], [NAME]Data>
+	{
+		
+	}
+}

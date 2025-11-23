@@ -11,7 +11,7 @@ using ObjectField = UnityEditor.Search.ObjectField;
 namespace Fsi.DataSystem.Selectors
 {
     [CustomPropertyDrawer(typeof(SelectorAttribute))]
-    public abstract class SelectorAttributeDrawer<TType, TId> : PropertyDrawer where TType : Object, ISelectorData<TId>
+    public abstract class SelectorAttributeDrawer<TId, TType> : PropertyDrawer where TType : Object, ISelectorData<TId>
     {
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";

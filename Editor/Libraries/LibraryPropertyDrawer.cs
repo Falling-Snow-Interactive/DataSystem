@@ -9,9 +9,13 @@ namespace Fsi.DataSystem.Libraries
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            VisualElement root = new();
+            
             SerializedProperty entriesProp = property.FindPropertyRelative("entries");
             PropertyField entriesField = new(entriesProp){label = property.displayName};
-            return entriesField;
+            root.Add(entriesField);
+
+            return root;
         }
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Fsi.DataSystem.Libraries
 {
     [Serializable]
-    public class Library<TEntry, TID> where TEntry : IDataEntry<TID>
+    public class Library<TId, TEntry> where TEntry : IDataEntry<TId>
     {
         [SerializeField]
         private List<TEntry> entries = new();
@@ -23,12 +23,12 @@ namespace Fsi.DataSystem.Libraries
             entries.RemoveAll(q => q == null);
 
             // Group all quests by their QuestDataId
-            IEnumerable<IGrouping<TID, TEntry>> duplicateGroups = entries
-                .GroupBy(q => q.ID)
-                .Where(g => g.Skip(1).Any()); // faster than Count() > 1
+            IEnumerable<IGrouping<TId, TEntry>> duplicateGroups = entries
+                                                                  .GroupBy(q => q.ID)
+                                                                  .Where(g => g.Skip(1).Any()); // faster than Count() > 1
 
-            IEnumerable<IGrouping<TID,TEntry>> enumerable = duplicateGroups as IGrouping<TID, TEntry>[] ?? duplicateGroups.ToArray();
-            foreach (IGrouping<TID, TEntry> group in enumerable)
+            IEnumerable<IGrouping<TId,TEntry>> enumerable = duplicateGroups as IGrouping<TId, TEntry>[] ?? duplicateGroups.ToArray();
+            foreach (IGrouping<TId, TEntry> group in enumerable)
             {
                 string names = string.Join(", ", group.Select(q => q.ID));
                 Debug.LogWarning($"Library | Duplicate ID detected: '{group.Key}' used by {names}");
@@ -36,7 +36,7 @@ namespace Fsi.DataSystem.Libraries
             #endif
         }
 
-        public bool TryGetEntry(TID id, out TEntry entry)
+        public bool TryGetEntry(TId id, out TEntry entry)
         {
             foreach (TEntry e in Entries)
             {
@@ -51,15 +51,21 @@ namespace Fsi.DataSystem.Libraries
             return false;
         }
 
-        public List<TID> GetIDs()
+        public List<TId> GetIDs()
         {
-            List<TID> ids = new();
+            List<TId> ids = new();
             foreach (TEntry entry in Entries)
             {
                 ids.Add(entry.ID);
             }
 
             return ids;
+        }
+
+        public List<TEntry> Filter<T>() where T : TEntry
+        {
+            List<TEntry> e = Entries.Where(x => x is T).ToList();
+            return e;
         }
     }
 }
