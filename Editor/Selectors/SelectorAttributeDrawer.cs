@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Fsi.Ui.Spacers;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 using ObjectField = UnityEditor.Search.ObjectField;
+using Spacer = Fsi.Ui.Dividers.Spacer;
 
 namespace Fsi.DataSystem.Selectors
 {
@@ -73,7 +73,7 @@ namespace Fsi.DataSystem.Selectors
             
             selection.Add(dropdown);
 
-            selection.Add(new Spacer(3, SpacerOrientation.Vertical, SpacerColor.Dark));
+            selection.Add(new Spacer());
 
             VisualElement buttons = new()
                                     {

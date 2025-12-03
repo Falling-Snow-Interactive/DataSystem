@@ -11,11 +11,14 @@ namespace Fsi.DataSystem
     /// in data-driven systems and selectors.
     /// </summary>
     /// <typeparam name="T">Type used to ID the data objects.</typeparam>
-    public abstract class ScriptableData<T> : ScriptableObject, IDataEntry<T>, ISelectorData<T>, ISerializationCallbackReceiver
+    public abstract class ScriptableData<T> : ScriptableObject, 
+                                              IDataEntry<T>, 
+                                              ISelectorData<T>, 
+                                              ISerializationCallbackReceiver
     {
         #region Asset Menu Constants
         
-        protected const string Menu = "Fsi/";
+        protected const string Menu = "Falling Snow Interactive/";
         
         #endregion
         
@@ -130,9 +133,5 @@ namespace Fsi.DataSystem
         }
         
         #endregion
-    }
-
-    public class ScriptableDataImpl<T> : ScriptableData<T>
-    {
     }
 }
