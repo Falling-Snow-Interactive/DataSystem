@@ -5,13 +5,18 @@
   "description": "Data System package developed by Falling Snow Interactive.",
   "unity": "6000.2",
   "unityRelease": "6f2",
-  "keywords": ["Data", "Collection", "Libraries"],
+  "keywords": [
+    "Data",
+    "Collection",
+    "Libraries"
+  ],
   "author": {
     "name": "Kira Dinan",
     "email": "kira.dinan@fallingsnowinteractive.ca"
   },
   "hideInEditor": false,
   "dependencies": {
-      "com.fallingsnowinteractive.localization": "0.0.1"
+    "com.fallingsnowinteractive.localization": "0.0.1",
+    "com.fallingsnowinteractive.ui": "0.0.2"
   }
 }

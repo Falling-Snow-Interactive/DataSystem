@@ -6,7 +6,8 @@ using UnityEngine;
 namespace Fsi.DataSystem.Libraries
 {
     [Serializable]
-    public class Library<TId, TEntry> where TEntry : IDataEntry<TId>
+    public class Library<TId, TEntry> 
+        where TEntry : IDataEntry<TId>
     {
         [SerializeField]
         private List<TEntry> entries = new();

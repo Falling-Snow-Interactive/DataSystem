@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Selectors;
 using Fsi.Localization;
+using Fsi.Ui.Headers;
 using UnityEngine;
 
 namespace Fsi.DataSystem
@@ -28,13 +29,13 @@ namespace Fsi.DataSystem
         [SerializeField]
         private new string name;
         
-        [Header("Data")]
+        [FsiHeader("Data", 0)]
         
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
         private T id;
         
-        [Header("Localization")]
+        [FsiHeader("Localization", 0)]
         
         [Tooltip("Localization entry used to get the display name of this data entry.")]
         [SerializeField]
@@ -47,6 +48,14 @@ namespace Fsi.DataSystem
         [Tooltip("Localized description text for this data entry.")]
         [SerializeField]
         private LocEntry locDesc;
+
+        [FsiHeader("Visuals", 0)]
+
+        [SerializeField]
+        private Color color = Color.gray;
+
+        [SerializeField]
+        private Sprite icon;
 
         #endregion
         
@@ -92,6 +101,9 @@ namespace Fsi.DataSystem
         /// </summary>
         public string Desc => LocDesc.GetLocalizedString("no_loc_desc");
 
+        public Color Color => color;
+        
+        public Sprite Icon => icon;
 
         #endregion
         
