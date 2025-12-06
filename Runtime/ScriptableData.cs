@@ -55,7 +55,7 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the unique identifier for this data entry.
         /// </summary>
-        public T ID
+        public virtual T ID
         {
             get => id;
             protected set => id = value;
