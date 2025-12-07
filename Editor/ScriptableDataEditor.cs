@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Fsi.DataSystem
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(ScriptableData<>), true)]
     public class ScriptableDataEditor : Editor
     {

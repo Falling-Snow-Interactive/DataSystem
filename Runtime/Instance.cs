@@ -4,25 +4,23 @@ using UnityEngine;
 namespace Fsi.DataSystem
 {
     [Serializable]
-    public class Instance<TID, TData> : ISerializationCallbackReceiver
+    public abstract class Instance<TID, TData> : ISerializationCallbackReceiver
         where TData : IDataEntry<TID>
     {
         [HideInInspector]
         [SerializeField]
         private string name;
         
-        [SerializeField]
-        private TData data;
-        public TData Data => data;
-        
-        public Instance(TData data)
+        public abstract TData Data { get; set; }
+
+        protected Instance(TData data)
         {
-            this.data = data;
+            Data = data;
         }
 
         public void OnBeforeSerialize()
         {
-            name = data == null ? "No Data" : $"{Data.ID}";
+            name = Data == null ? "No Data" : $"{Data.ID}";
         }
 
         public void OnAfterDeserialize() { }
