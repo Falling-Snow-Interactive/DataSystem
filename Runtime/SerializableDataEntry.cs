@@ -1,12 +1,12 @@
 using System;
-using Fsi.DataSystem.Selectors;
+using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
 using UnityEngine;
 
 namespace Fsi.DataSystem
 {
     [Serializable]
-    public class SerializableDataEntry<T> : IDataEntry<T>, ISelectorData<T>
+    public class SerializableDataEntry<T> : IDataEntry<T>, ILibraryData<T>
     {
         [Header("Data")]
 

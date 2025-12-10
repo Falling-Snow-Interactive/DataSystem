@@ -1,11 +1,12 @@
 using System;
+using Fsi.DataSystem.Libraries;
 using UnityEngine;
 
 namespace Fsi.DataSystem
 {
     [Serializable]
     public abstract class Instance<TID, TData> : ISerializationCallbackReceiver
-        where TData : IDataEntry<TID>
+        where TData : ILibraryData<TID>
     {
         [HideInInspector]
         [SerializeField]

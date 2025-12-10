@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Fsi.DataSystem.Selectors;
+using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
 using Fsi.Ui.Headers;
 using UnityEngine;
@@ -13,8 +13,7 @@ namespace Fsi.DataSystem
     /// </summary>
     /// <typeparam name="T">Type used to ID the data objects.</typeparam>
     public abstract class ScriptableData<T> : ScriptableObject, 
-                                              IDataEntry<T>, 
-                                              ISelectorData<T>, 
+                                              ILibraryData<T>, 
                                               ISerializationCallbackReceiver
     {
         #region Asset Menu Constants
@@ -29,13 +28,13 @@ namespace Fsi.DataSystem
         [SerializeField]
         private new string name;
         
-        [FsiHeader("Data", 0)]
+        [Header("Data")]
         
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
         private T id;
         
-        [FsiHeader("Localization", 0)]
+        [Header("Localization")]
         
         [Tooltip("Localization entry used to get the display name of this data entry.")]
         [SerializeField]
@@ -49,7 +48,7 @@ namespace Fsi.DataSystem
         [SerializeField]
         private LocEntry locDesc;
 
-        [FsiHeader("Visuals", 0)]
+        [Header("Visuals")]
 
         [SerializeField]
         private Color color = Color.gray;

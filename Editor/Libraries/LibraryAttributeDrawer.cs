@@ -8,30 +8,32 @@ using Object = UnityEngine.Object;
 using ObjectField = UnityEditor.Search.ObjectField;
 using Spacer = Fsi.Ui.Dividers.Spacer;
 
-namespace Fsi.DataSystem.Selectors
+namespace Fsi.DataSystem.Libraries
 {
-    [CustomPropertyDrawer(typeof(SelectorAttribute))]
-    public abstract class SelectorAttributeDrawer<TId, TType> : PropertyDrawer where TType : Object, ISelectorData<TId>
+    [CustomPropertyDrawer(typeof(LibraryAttribute))]
+    public abstract class LibraryAttributeDrawer<TId, TData> : PropertyDrawer 
+        where TData : Object, ILibraryData<TId>
     {
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
         
-        protected abstract List<TType> GetEntries();
+        protected abstract Library<TId,TData> GetLibrary();
         
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             VisualElement root = new(); // {style = { flexDirection = FlexDirection.Row}};
-            
-            List<TType> data = GetEntries(); 
+
+            Library<TId, TData> library = GetLibrary();
+            List<TData> data = library.Entries; 
             List<string> names = data.Select(d => d.ID.ToString()).ToList();
             names.Insert(0, "None");
 
             ObjectField objectField = new("Data")
                                               {
-                                                  objectType = typeof(TType),
+                                                  objectType = typeof(TData),
                                                   value = property.objectReferenceValue
                                               };
-            objectField.SetEnabled(false); // Optional: make it read-only
+            objectField.SetEnabled(false); 
             
             VisualElement selection = new()
                                       {
@@ -48,7 +50,7 @@ namespace Fsi.DataSystem.Selectors
             root.Add(selection);
             
             int selectedIndex = 0;
-            if (property.objectReferenceValue != null && property.objectReferenceValue is ISelectorData<TId> t)
+            if (property.objectReferenceValue != null && property.objectReferenceValue is ILibraryData<TId> t)
             {
                 selectedIndex = names.IndexOf(t.ID.ToString());
             }
@@ -67,7 +69,7 @@ namespace Fsi.DataSystem.Selectors
                                                       int index = dropdown.index;
                                                       index -= 1;
                                                       
-                                                      property.objectReferenceValue = index == -1 ? null : GetEntries()[index];
+                                                      property.objectReferenceValue = index == -1 ? null : data[index];
                                                       property.serializedObject.ApplyModifiedProperties();
                                                   });
             
@@ -94,7 +96,7 @@ namespace Fsi.DataSystem.Selectors
                                     };
 
             selection.Add(buttons);
-
+            
             Texture2D selectSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(SelectSpritePath);
             VisualElement selectButton = CreateButton(selectSprite, () =>
                                                                     {

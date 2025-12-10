@@ -7,7 +7,7 @@ namespace Fsi.DataSystem.Libraries
 {
     [Serializable]
     public class Library<TId, TEntry> 
-        where TEntry : IDataEntry<TId>
+        where TEntry : ILibraryData<TId>
     {
         [SerializeField]
         private List<TEntry> entries = new();
@@ -67,6 +67,11 @@ namespace Fsi.DataSystem.Libraries
         {
             List<TEntry> e = Entries.Where(x => x is T).ToList();
             return e;
+        }
+
+        public TEntry Random()
+        {
+            return Entries[UnityEngine.Random.Range(0, Entries.Count - 1)];
         }
     }
 }

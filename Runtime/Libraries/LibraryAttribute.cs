@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 
-namespace Fsi.DataSystem.Selectors
+namespace Fsi.DataSystem.Libraries
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class SelectorAttribute : PropertyAttribute
+    public class LibraryAttribute : PropertyAttribute
     {
         
     }
