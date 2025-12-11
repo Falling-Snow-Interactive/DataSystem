@@ -21,122 +21,9 @@ namespace Fsi.DataSystem.Libraries
         
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            VisualElement root = new();
-
-            Library<TId, TData> library = GetLibrary();
-            TData current = property.objectReferenceValue as TData;
-
-            // Build dropdown reusing the helper
-            var dropdown = LibraryUtility.BuildLibraryDropdown(property.displayName,
-                                                               library,
-                                                               current,
-                                                               data => data.ID.ToString(), // or data.DisplayName, etc.
-                                                               newValue =>
-                                                               {
-                                                                   property.serializedObject.Update();
-                                                                   property.objectReferenceValue = newValue;
-                                                                   property.serializedObject.ApplyModifiedProperties();
-                                                               });
-
-            var selection = new VisualElement
-                            {
-                                style =
-                                {
-                                    flexDirection = FlexDirection.Row,
-                                    height = EditorGUIUtility.singleLineHeight
-                                }
-                            };
-
-            selection.Add(dropdown);
-            selection.Add(new Spacer());
-
-            // Optional: object field + ping / open logic
-            var objectField = new ObjectField("Data")
-                              {
-                                  objectType = typeof(TData),
-                                  value = current,
-                                  // read-only view
-                              };
-            objectField.SetEnabled(false);
-            objectField.style.display = DisplayStyle.None; // or add it underneath if you want
-
-            // Make sure dropdown and object field stay in sync
-            dropdown.RegisterValueChangedCallback(_ =>
-                                                  {
-                                                      objectField.value = property.objectReferenceValue;
-                                                  });
-
-            // buttons using the objectField
-            var buttons = BuildButtons(objectField);
-            selection.Add(buttons);
-
-            root.Add(selection);
-            return root;
-        }
-        
-        private VisualElement BuildButtons(ObjectField objectField)
-        {
-            VisualElement buttons = new()
-                                    {
-                                        style =
-                                        {
-                                            flexDirection = FlexDirection.Row,
-
-                                            paddingTop = 0,
-                                            paddingRight = 0,
-                                            paddingBottom = 0,
-                                            paddingLeft = 0,
-
-                                            marginTop = 0,
-                                            marginRight = 0,
-                                            marginBottom = 0,
-                                            marginLeft = 0,
-                                        },
-                                    };
-
-            // Ping button
-            Texture2D selectSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(SelectSpritePath);
-            VisualElement selectButton = CreateButton(selectSprite,
-                                                      () =>
-                                                      {
-                                                          if (objectField.value != null)
-                                                          {
-                                                              EditorGUIUtility.PingObject(objectField.value);
-                                                          }
-                                                      },
-                                                      "",
-                                                      "Select object in project."
-                                                     );
-
-            // Open button
-            Texture2D openSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenSpritePath);
-            VisualElement openButton = CreateButton(openSprite,
-                                                    () =>
-                                                    {
-                                                        if (objectField.value != null)
-                                                        {
-                                                            EditorUtility.OpenPropertyEditor(objectField.value);
-                                                        }
-                                                    },
-                                                    "",
-                                                    "Open object window."
-                                                   );
-
-            buttons.Add(selectButton);
-            buttons.Add(openButton);
-
-            return buttons;
-        }
-        
-        /*
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
-        {
             VisualElement root = new(); // {style = { flexDirection = FlexDirection.Row}};
 
-            string label = property.displayName;
             Library<TId, TData> library = GetLibrary();
-            
-            
             List<TData> data = library.Entries; 
             List<string> names = data.Select(d => d.ID.ToString()).ToList();
             names.Insert(0, "None");
@@ -147,19 +34,7 @@ namespace Fsi.DataSystem.Libraries
                 selectedIndex = names.IndexOf(t.ID.ToString());
             }
 
-            return LibraryUtility.BuildLibraryDropdown(label, 
-                                                       property.displayName, 
-                                                       library, 
-                                                       property.objectReferenceValue,
-                                                       ,
-                                                       evt =>
-                                                       {
-                                                           
-                                                       });
-
-            /*
-
-            ObjectField objectField = new("Data")
+            ObjectField objectField = new(property.displayName)
                                               {
                                                   objectType = typeof(TData),
                                                   value = property.objectReferenceValue
@@ -230,7 +105,7 @@ namespace Fsi.DataSystem.Libraries
                                                                             EditorGUIUtility.PingObject(objectField
                                                                                                             .value);
                                                                         }
-                                                                    }, "", "Select object in project.");
+                                                                    }, label: "", tooltip: "Select object in project.");
 
             Texture2D openSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenSpritePath);
             VisualElement openButton = CreateButton(openSprite, () =>
@@ -239,15 +114,13 @@ namespace Fsi.DataSystem.Libraries
                                                              {
                                                                  EditorUtility.OpenPropertyEditor(objectField.value);
                                                              }
-                                                         }, "", "Open object window.");
+                                                         }, label: "", tooltip: "Open object window.");
 
             buttons.Add(selectButton);
             buttons.Add(openButton);
 
             return root;
         }
-        */
-        
 
         private VisualElement CreateButton(Texture2D icon, Action callback, string label = "", string tooltip = "")
         {
@@ -274,8 +147,9 @@ namespace Fsi.DataSystem.Libraries
                                           marginBottom = margin, 
                                           marginLeft = margin,
                                       },
+                                      tooltip = tooltip,
                                   };
-
+            
             button.clicked += callback;
 
             Image image = new()
