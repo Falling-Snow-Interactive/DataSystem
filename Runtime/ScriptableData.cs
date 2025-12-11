@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
-using Fsi.Ui.Headers;
 using UnityEngine;
 
 namespace Fsi.DataSystem

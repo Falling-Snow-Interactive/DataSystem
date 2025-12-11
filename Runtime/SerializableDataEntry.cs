@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Fsi.DataSystem
 {
     [Serializable]
-    public class SerializableDataEntry<T> : IDataEntry<T>, ILibraryData<T>
+    public class SerializableDataEntry<T> : ILibraryData<T>
     {
         [Header("Data")]
 

@@ -23,10 +23,9 @@ namespace Fsi.DataSystem.Libraries
             
             entries.RemoveAll(q => q == null);
 
-            // Group all quests by their QuestDataId
             IEnumerable<IGrouping<TId, TEntry>> duplicateGroups = entries
                                                                   .GroupBy(q => q.ID)
-                                                                  .Where(g => g.Skip(1).Any()); // faster than Count() > 1
+                                                                  .Where(g => g.Skip(1).Any());
 
             IEnumerable<IGrouping<TId,TEntry>> enumerable = duplicateGroups as IGrouping<TId, TEntry>[] ?? duplicateGroups.ToArray();
             foreach (IGrouping<TId, TEntry> group in enumerable)

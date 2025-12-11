@@ -12,15 +12,15 @@ namespace Fsi.DataSystem
         [SerializeField]
         private string name;
 
-        // This is the field we'll customize via UI Toolkit
-        [LibraryReference]
-        [SerializeField]
-        private TData data;
-        public TData Data => data;
+        // [SerializeField]
+        // private TData data;
+        // public TData Data => data;
+        
+        public abstract TData Data { get; set; }
 
         protected Instance(TData data)
         {
-            this.data = data;
+            Data = data;
         }
 
         public void OnBeforeSerialize()
