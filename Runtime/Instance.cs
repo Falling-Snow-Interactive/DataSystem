@@ -11,12 +11,16 @@ namespace Fsi.DataSystem
         [HideInInspector]
         [SerializeField]
         private string name;
-        
-        public abstract TData Data { get; set; }
+
+        // This is the field we'll customize via UI Toolkit
+        [LibraryReference]
+        [SerializeField]
+        private TData data;
+        public TData Data => data;
 
         protected Instance(TData data)
         {
-            Data = data;
+            this.data = data;
         }
 
         public void OnBeforeSerialize()

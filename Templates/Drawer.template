@@ -1,0 +1,13 @@
+using [Namespace].Settings;
+using Fsi.DataSystem.Libraries;
+using UnityEditor;
+
+namespace [Namespace].Editor
+{
+	[CustomPropertyDrawer(typeof([Name]LibraryAttribute))]
+	public class [Name]LibraryAttributeDrawer : LibraryAttributeDrawer<[ID], [Data]>
+	{
+	    // TODO - There's probably a better/automatic way to getting the library
+		protected override Library<[ID]], [Data]> GetLibrary() => [Library];
+	}
+}

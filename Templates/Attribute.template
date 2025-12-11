@@ -1,0 +1,12 @@
+using System;
+using Fsi.DataSystem.Libraries;
+
+// TODO - Get namespace automatically maybe?
+namespace [Namespace]
+{
+	[AttributeUsage(AttributeTargets.Field)]
+	public class [Name]LibraryAttribute : LibraryAttribute
+	{
+		
+	}
+}

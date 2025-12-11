@@ -1,0 +1,11 @@
+.entry {
+    flex-grow: 1;
+}
+
+.entry_label {
+    max-width: 85px;
+}
+
+.entry_field {
+    flex-grow: 1;
+}

@@ -1,0 +1,44 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.fallingsnowinteractive.ui/Assets/FsiUi.uss?fileID=7433441132597879392&amp;guid=01dcb199b69684b03a55e2aa71e0405f&amp;type=3#FsiUi"/>
+    <Style src="project://database/Packages/com.fallingsnowinteractive.datasystem/Editor/Libraries/Create/CreateLibraryEditor.uss?fileID=7433441132597879392&amp;guid=cb3d9d69933af49398eecd9fdba889b8&amp;type=3#CreateLibraryEditor"/>
+    <engine:VisualElement name="root" style="flex-grow: 0; margin-top: 5px; margin-right: 5px; margin-bottom: 5px; margin-left: 5px;">
+        <engine:VisualElement name="header" style="flex-grow: 0;">
+            <engine:Label text="Create Library" style="-unity-font-style: bold;"/>
+        </engine:VisualElement>
+        <Fsi.Ui.Dividers.Spacer/>
+        <engine:VisualElement name="settings" style="flex-grow: 0;">
+            <engine:VisualElement name="location_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="Path" name="location_text" class="entry_label" style="width: 33%;"/>
+                <engine:VisualElement class="entry_field" style="flex-grow: 1; flex-direction: row;">
+                    <engine:Label text="/path/to/folder/" name="location_path" style="width: 34%; flex-grow: 1;"/>
+                    <engine:Button text="Choose Folder" name="location_button" style="width: 125px;"/>
+                </engine:VisualElement>
+            </engine:VisualElement>
+            <engine:VisualElement name="name_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="Name" name="name_text" class="entry_label" style="width: 33%;"/>
+                <engine:TextField placeholder-text="Enter name..." name="name_field" hide-placeholder-on-focus="true" class="entry_field" style="width: 66%;"/>
+            </engine:VisualElement>
+            <engine:VisualElement name="namespace_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="Namespace" name="namespace_text" class="entry_label" style="width: 33%;"/>
+                <engine:TextField placeholder-text="Enter namespace..." name="namespace_field" hide-placeholder-on-focus="true" class="entry_field" style="width: 66%;"/>
+            </engine:VisualElement>
+            <engine:VisualElement name="id_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="ID" name="id_text" class="entry_label" style="width: 33%;"/>
+                <engine:TextField placeholder-text="Enter ID" name="id_field" hide-placeholder-on-focus="true" class="entry_field" style="width: 66%;"/>
+            </engine:VisualElement>
+            <engine:VisualElement name="data_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="Data" name="data_text" class="entry_label" style="width: 33%;"/>
+                <engine:TextField placeholder-text="Enter Data..." name="data_field" hide-placeholder-on-focus="true" class="entry_field" style="width: 66%;"/>
+            </engine:VisualElement>
+            <engine:VisualElement name="library_entry" class="entry" style="flex-grow: 0; flex-direction: row;">
+                <engine:Label text="Library" name="library_text" class="entry_label" style="width: 33%;"/>
+                <engine:TextField placeholder-text="Enter Library..." name="library_field" hide-placeholder-on-focus="true" class="entry_field" style="width: 66%;"/>
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <Fsi.Ui.Dividers.Spacer/>
+        <engine:VisualElement name="buttons" style="flex-grow: 0; flex-direction: row;">
+            <engine:VisualElement name="space" style="flex-grow: 1; width: 50%;"/>
+            <engine:Button text="Confirm" name="confirm_button" style="width: 50%;"/>
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>
