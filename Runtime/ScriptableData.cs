@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Fsi.DataSystem
 {
@@ -52,8 +53,9 @@ namespace Fsi.DataSystem
         [SerializeField]
         private Color color = Color.gray;
 
+        [FormerlySerializedAs("icon")]
         [SerializeField]
-        private Sprite icon;
+        private Sprite sprite;
 
         #endregion
         
@@ -101,7 +103,7 @@ namespace Fsi.DataSystem
 
         public Color Color => color;
         
-        public Sprite Icon => icon;
+        public Sprite Sprite => sprite;
 
         #endregion
         
