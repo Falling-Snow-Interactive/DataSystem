@@ -36,8 +36,7 @@ namespace Fsi.DataSystem
 
         #region Toolbar
 
-        // Subclasses can add their own buttons if they want to.
-        protected void AddToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
+        private void AddToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
         {
             if (toolbar == null)
             {

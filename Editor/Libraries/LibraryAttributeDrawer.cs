@@ -29,7 +29,7 @@ namespace Fsi.DataSystem.Libraries
             names.Insert(0, "None");
             
             int selectedIndex = 0;
-            if (property.objectReferenceValue != null && property.objectReferenceValue is ILibraryData<TId> t)
+            if (property.objectReferenceValue && property.objectReferenceValue is ILibraryData<TId> t)
             {
                 selectedIndex = names.IndexOf(t.ID.ToString());
             }
@@ -57,7 +57,7 @@ namespace Fsi.DataSystem.Libraries
 
             DropdownField dropdown = new(names, selectedIndex)
             {
-                label = property.displayName,
+                label = IsCollectionElement(property) ? "" : property.displayName,
                 style =
                 {
                     flexGrow = 1,
@@ -181,6 +181,11 @@ namespace Fsi.DataSystem.Libraries
             button.Add(image);
 
             return button;
+        }
+        
+        private bool IsCollectionElement(SerializedProperty property)
+        {
+            return property.propertyPath.Contains("Array.data[");
         }
     }
 }
