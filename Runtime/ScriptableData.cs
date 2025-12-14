@@ -28,23 +28,21 @@ namespace Fsi.DataSystem
         [SerializeField]
         private new string name;
         
-        [Header("Data")]
-        
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
         private T id;
         
         [Header("Localization")]
         
-        [Tooltip("Localization entry used to get the display name of this data entry.")]
+        [InspectorName("Name"), Tooltip("Localization entry used to get the display name of this data entry.")]
         [SerializeField]
         private LocEntry locName;
         
-        [Tooltip("Localized plural name. Falls back to the singular name if unset.")]
+        [InspectorName("Plural"), Tooltip("Localized plural name. Falls back to the singular name if unset.")]
         [SerializeField]
         private LocEntry locPlural;
         
-        [Tooltip("Localized description text for this data entry.")]
+        [InspectorName("Description"), Tooltip("Localized description text for this data entry.")]
         [SerializeField]
         private LocEntry locDesc;
 
