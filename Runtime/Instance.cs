@@ -11,15 +11,12 @@ namespace Fsi.DataSystem
         [HideInInspector]
         [SerializeField]
         private string name;
-
-        // [SerializeField]
-        // private TData data;
-        // public TData Data => data;
         
         public abstract TData Data { get; set; }
 
         protected Instance(TData data)
         {
+            // ReSharper disable once VirtualMemberCallInConstructor
             Data = data;
         }
 
