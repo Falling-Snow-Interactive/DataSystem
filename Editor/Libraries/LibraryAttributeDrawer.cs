@@ -57,7 +57,6 @@ namespace Fsi.DataSystem.Libraries
 
             DropdownField dropdown = new(names, selectedIndex)
             {
-                label = IsCollectionElement(property) ? "" : property.displayName,
                 style =
                 {
                     flexGrow = 1,
