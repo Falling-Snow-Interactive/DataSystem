@@ -10,26 +10,28 @@ using Spacer = Fsi.Ui.Dividers.Spacer;
 
 namespace Fsi.DataSystem.Libraries
 {
-    [CustomPropertyDrawer(typeof(LibraryAttribute))]
-    public abstract class LibraryAttributeDrawer<TId, TData> : PropertyDrawer 
-        where TData : Object, ILibraryData<TId>
+    [CustomPropertyDrawer(typeof(LibraryAttribute), true)]
+    public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer 
+        where TData : Object, ILibraryData<TID>
     {
+        #region Constants
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
+        #endregion
         
-        protected abstract Library<TId,TData> GetLibrary();
+        protected abstract Library<TID,TData> GetLibrary();
         
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            VisualElement root = new(); // {style = { flexDirection = FlexDirection.Row}};
+            VisualElement root = new();
 
-            Library<TId, TData> library = GetLibrary();
+            Library<TID, TData> library = GetLibrary();
             List<TData> data = library.Entries; 
             List<string> names = data.Select(d => d.ID.ToString()).ToList();
             names.Insert(0, "None");
             
             int selectedIndex = 0;
-            if (property.objectReferenceValue && property.objectReferenceValue is ILibraryData<TId> t)
+            if (property.objectReferenceValue && property.objectReferenceValue is ILibraryData<TID> t)
             {
                 selectedIndex = names.IndexOf(t.ID.ToString());
             }
