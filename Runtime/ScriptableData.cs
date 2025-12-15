@@ -24,10 +24,6 @@ namespace Fsi.DataSystem
         #endregion
         
         #region Inspector Fields
-
-        // [HideInInspector]
-        // [SerializeField]
-        // private new string name;
         
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
