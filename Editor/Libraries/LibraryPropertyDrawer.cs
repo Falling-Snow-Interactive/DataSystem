@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace Fsi.DataSystem.Libraries
 {
-    [CustomPropertyDrawer(typeof(Library<,>), true)]
+    // [CustomPropertyDrawer(typeof(Library<,>), true)]
     public class LibraryPropertyDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)

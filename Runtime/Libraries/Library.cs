@@ -6,16 +6,19 @@ using UnityEngine;
 namespace Fsi.DataSystem.Libraries
 {
     [Serializable]
-    public class Library<TId, TEntry> 
-        where TEntry : ILibraryData<TId>
+    public class Library<TID, TEntry> 
+        where TEntry : ILibraryData<TID>
     {
+        [SerializeField]
+        private TID defaultID = default;
+        public TEntry Default => GetDefault();
+        
         [SerializeField]
         private List<TEntry> entries = new();
         public List<TEntry> Entries => entries;
-        
-        public void Validate()
+
+        public void CheckDuplicates()
         {
-            #if UNITY_EDITOR
             if (entries == null || entries.Count == 0)
             {
                 return;
@@ -23,20 +26,19 @@ namespace Fsi.DataSystem.Libraries
             
             entries.RemoveAll(q => q == null);
 
-            IEnumerable<IGrouping<TId, TEntry>> duplicateGroups = entries
+            IEnumerable<IGrouping<TID, TEntry>> duplicateGroups = entries
                                                                   .GroupBy(q => q.ID)
                                                                   .Where(g => g.Skip(1).Any());
 
-            IEnumerable<IGrouping<TId,TEntry>> enumerable = duplicateGroups as IGrouping<TId, TEntry>[] ?? duplicateGroups.ToArray();
-            foreach (IGrouping<TId, TEntry> group in enumerable)
+            IEnumerable<IGrouping<TID,TEntry>> enumerable = duplicateGroups as IGrouping<TID, TEntry>[] ?? duplicateGroups.ToArray();
+            foreach (IGrouping<TID, TEntry> group in enumerable)
             {
                 string names = string.Join(", ", group.Select(q => q.ID));
                 Debug.LogWarning($"Library | Duplicate ID detected: '{group.Key}' used by {names}");
             }
-            #endif
         }
 
-        public bool TryGetEntry(TId id, out TEntry entry)
+        public bool TryGetEntry(TID id, out TEntry entry)
         {
             foreach (TEntry e in Entries)
             {
@@ -51,9 +53,9 @@ namespace Fsi.DataSystem.Libraries
             return false;
         }
 
-        public List<TId> GetIDs()
+        public List<TID> GetIDs()
         {
-            List<TId> ids = new();
+            List<TID> ids = new();
             foreach (TEntry entry in Entries)
             {
                 ids.Add(entry.ID);
@@ -62,15 +64,25 @@ namespace Fsi.DataSystem.Libraries
             return ids;
         }
 
-        public List<TEntry> Filter<T>() where T : TEntry
+        public List<TEntry> Filter()// where T : TEntry
         {
-            List<TEntry> e = Entries.Where(x => x is T).ToList();
+            List<TEntry> e = Entries.Where(x => x != null).ToList();
             return e;
         }
 
         public TEntry Random()
         {
             return Entries[UnityEngine.Random.Range(0, Entries.Count - 1)];
+        }
+
+        public TEntry GetDefault()
+        {
+            if (TryGetEntry(defaultID, out TEntry entry))
+            {
+                return entry;
+            }
+
+            throw new KeyNotFoundException($"Library | Default ID '{defaultID}' was not found in entries.");
         }
     }
 }

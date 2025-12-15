@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -24,9 +25,9 @@ namespace Fsi.DataSystem
         
         #region Inspector Fields
 
-        [HideInInspector]
-        [SerializeField]
-        private new string name;
+        // [HideInInspector]
+        // [SerializeField]
+        // private new string name;
         
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
@@ -67,7 +68,7 @@ namespace Fsi.DataSystem
             get => id;
             protected set => id = value;
         }
-        
+
         /// <summary>
         /// Gets the localization entry used for this data entry's display name.
         /// </summary>
@@ -128,7 +129,7 @@ namespace Fsi.DataSystem
 
         public void OnBeforeSerialize()
         {
-            name = ToString();
+            // name = ToString();
         }
 
         public void OnAfterDeserialize() { }
@@ -143,5 +144,29 @@ namespace Fsi.DataSystem
         }
         
         #endregion
+        
+        public virtual void Validate()
+        {
+            List<string> errors = new();
+
+            if (ID == null)
+            {
+                string msg = $"ID on {name} is null.";
+                Debug.LogError(msg, this);
+                errors.Add(msg);
+            }
+
+            if (!LocName.IsSet)
+            {
+                string msg = $"LocName not set on {name}.";
+                Debug.LogError(msg, this);
+                errors.Add(msg);
+            }
+
+            if (errors.Count > 0)
+            {
+                Assert.Fail(string.Join("\n", errors));
+            }
+        }
     }
 }
