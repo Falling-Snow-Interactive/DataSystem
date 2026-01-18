@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using Object = System.Object;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -109,13 +110,13 @@ namespace Fsi.DataSystem.Libraries
                 }
             }
 
-#if UNITY_EDITOR
+            #if UNITY_EDITOR
             if (TryResolveLibraryFromAssets(libraryType, out library))
             {
                 LibrariesByLibraryType[libraryType] = library;
                 return true;
             }
-#endif
+            #endif
 
             library = null;
             return false;
@@ -137,24 +138,25 @@ namespace Fsi.DataSystem.Libraries
             return TryFindLibraryInScriptableObjects(libraryType, out library);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private static Object FindScriptableObjectAsset(Type assetType)
         {
             string[] guids = AssetDatabase.FindAssets($"t:{assetType.Name}");
-            if (guids.Length == 0)
+            switch (guids.Length)
             {
-                return null;
-            }
-
-            if (guids.Length > 1)
-            {
-                Debug.LogWarning($"LibraryUtility | Multiple assets found for {assetType.Name}. Using the first match.");
+                case 0:
+                    return null;
+                case > 1:
+                    Debug.LogWarning($"LibraryUtility | Multiple assets found for {assetType.Name}. Using the first match.");
+                    break;
             }
 
             string path = AssetDatabase.GUIDToAssetPath(guids[0]);
             return AssetDatabase.LoadAssetAtPath(path, assetType);
         }
 
-        private static bool TryFindLibraryInScriptableObjects(Type libraryType, out object library)
+        // ReSharper disable Unity.PerformanceAnalysis
+        private static bool TryFindLibraryInScriptableObjects(Type libraryType, out Object library)
         {
             string[] guids = AssetDatabase.FindAssets("t:ScriptableObject");
             object found = null;
@@ -164,7 +166,7 @@ namespace Fsi.DataSystem.Libraries
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 ScriptableObject asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-                if (asset == null)
+                if (!asset)
                 {
                     continue;
                 }
