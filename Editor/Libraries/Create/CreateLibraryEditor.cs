@@ -15,9 +15,6 @@ namespace Fsi.DataSystem.Libraries.Create
         private const string TemplateExtension = "template";
         
         private const string LibraryTemplate = "Library";
-        private const string AttributeTemplate = "Attribute";
-        private const string DrawerTemplate = "Drawer";
-        
         [SerializeField]
         private VisualTreeAsset treeAsset = null;
         
@@ -29,7 +26,6 @@ namespace Fsi.DataSystem.Libraries.Create
         private TextField namespaceField;
         private TextField idField;
         private TextField dataField; 
-        private TextField libraryField; 
 
         [MenuItem("Assets/Create/Falling Snow Interactive/Create Library")]
         public static void OpenWindow()
@@ -50,7 +46,6 @@ namespace Fsi.DataSystem.Libraries.Create
             namespaceField = root.Q<TextField>("namespace_field");
             idField = root.Q<TextField>("id_field");
             dataField = root.Q<TextField>("data_field");
-            libraryField = root.Q<TextField>("library_field");
             
             // Initial values
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
@@ -61,7 +56,6 @@ namespace Fsi.DataSystem.Libraries.Create
             namespaceField.value = PathToNamespace(path);
             idField.value = $"{n}ID";
             dataField.value = $"{n}Data";
-            libraryField.value = $"{n}Settings.Library";
             
             locationButton.clicked += () =>
                                       {
@@ -78,7 +72,6 @@ namespace Fsi.DataSystem.Libraries.Create
                                          string s = namespaceField.value;
                                          string i = idField.value;
                                          string d = dataField.value;
-                                         string l = libraryField.value;
                                          
                                          if (string.IsNullOrWhiteSpace(p) 
                                              || string.IsNullOrWhiteSpace(n)
@@ -98,23 +91,15 @@ namespace Fsi.DataSystem.Libraries.Create
                                              Directory.CreateDirectory(libPath);
                                          }
                                          
-                                         string edPath = Path.Combine(libPath, "Editor");
-                                         if (!Directory.Exists(edPath))
-                                         {
-                                             Directory.CreateDirectory(edPath);
-                                         }
-
-                                         CreateLibrary(libPath, n, s, i ,d, l);
-                                         CreateLibraryAttribute(libPath, n, s,i,d,l);
-                                         CreateLibraryAttributeDrawer(edPath, n, s,i,d,l);
+                                         CreateLibrary(libPath, n, s, i ,d);
                                          
                                          Close();
                                      };
         }
         
-        private void CreateLibrary(string path, string name, string nspace, string id, string data, string library)
+        private void CreateLibrary(string path, string name, string nspace, string id, string data)
         {
-            string output = FillTemplate(LibraryTemplate, name, nspace, id, data, library);
+            string output = FillTemplate(LibraryTemplate, name, nspace, id, data, string.Empty);
 
             // Ensure target directory exists
             if (!Directory.Exists(path))
@@ -135,44 +120,6 @@ namespace Fsi.DataSystem.Libraries.Create
             }
 
             Debug.Log($"Created {fileName} at: {absoluteOutPath}");
-        }
-
-        private void CreateLibraryAttribute(string path, string name, string nspace, string id, string data, string library)
-        {
-            string output = FillTemplate(AttributeTemplate, name, nspace, id, data, library);
-
-            // Write Attribute file
-            string filename = $"{name}LibraryAttribute.cs";
-            string absolutePath = Path.Combine(path, filename);
-            File.WriteAllText(absolutePath, output);
-
-            // If saved under Assets/, refresh so Unity imports it
-            string projectAssets = Application.dataPath.Replace("\\", "/");
-            if (absolutePath.Replace("\\", "/").StartsWith(projectAssets))
-            {
-                AssetDatabase.Refresh();
-            }
-
-            Debug.Log($"Created {filename} at: {absolutePath}");
-        }
-        
-        private void CreateLibraryAttributeDrawer(string path, string name, string nspace, string id, string data, string library)
-        {
-            string output = FillTemplate(DrawerTemplate, name, nspace, id, data, library);
-
-            // Write Drawer file
-            string filename = $"{name}LibraryAttributeDrawer.cs";
-            string absolutePath = Path.Combine(path, filename);
-            File.WriteAllText(absolutePath, output);
-
-            // If saved under Assets/, refresh so Unity imports it
-            string projectAssets = Application.dataPath.Replace("\\", "/");
-            if (absolutePath.Replace("\\", "/").StartsWith(projectAssets))
-            {
-                AssetDatabase.Refresh();
-            }
-
-            Debug.Log($"Created {filename} at: {absolutePath}");
         }
 
         private static string GetTemplateFullPath(string filename)

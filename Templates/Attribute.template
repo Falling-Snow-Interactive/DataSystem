@@ -1,12 +1,12 @@
-using System;
 using Fsi.DataSystem.Libraries;
+using UnityEngine;
 
-// TODO - Get namespace automatically maybe?
 namespace [Namespace]
 {
-	[AttributeUsage(AttributeTargets.Field)]
-	public class [Name]LibraryAttribute : LibraryAttribute
+	public class [Name]LibraryUsageExample : MonoBehaviour
 	{
-		
+		// Example usage of the shared LibraryAttribute.
+		[Library(typeof([Name]Settings), "Library")]
+		public [Data] entry;
 	}
 }
