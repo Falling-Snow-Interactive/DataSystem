@@ -1,6 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,15 +12,12 @@ using Spacer = Fsi.Ui.Dividers.Spacer;
 namespace Fsi.DataSystem.Libraries
 {
     [CustomPropertyDrawer(typeof(LibraryAttribute), true)]
-    public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer 
-        where TData : Object, ILibraryData<TID>
+    public class LibraryAttributeDrawer : PropertyDrawer
     {
         #region Constants
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
         #endregion
-        
-        protected abstract Library<TID,TData> GetLibrary();
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -31,21 +29,20 @@ namespace Fsi.DataSystem.Libraries
             // IMGUI fallback / support for older Unity inspector UI.
             EditorGUI.BeginProperty(position, label, property);
 
-            Library<TID, TData> library = GetLibrary();
-            List<TData> data = library != null ? library.Entries : new List<TData>();
+            List<Object> data = GetLibraryEntries();
 
             // Build options: "None" + IDs
             List<string> names = new(data.Count + 1) { "None" };
             for (int i = 0; i < data.Count; i++)
             {
-                names.Add(data[i] != null ? data[i].ID.ToString() : "<Missing>");
+                names.Add(GetEntryId(data[i]));
             }
 
             // Current selection
             int selectedIndex = 0;
-            if (property.objectReferenceValue != null && property.objectReferenceValue is ILibraryData<TID> current)
+            if (property.objectReferenceValue != null)
             {
-                string currentId = current.ID.ToString();
+                string currentId = GetEntryId(property.objectReferenceValue);
                 int found = names.IndexOf(currentId);
                 selectedIndex = found >= 0 ? found : 0;
             }
@@ -72,7 +69,7 @@ namespace Fsi.DataSystem.Libraries
             if (EditorGUI.EndChangeCheck())
             {
                 int dataIndex = newIndex - 1;
-                property.objectReferenceValue = dataIndex < 0 ? null : data[dataIndex];
+                property.objectReferenceValue = dataIndex < 0 || dataIndex >= data.Count ? null : data[dataIndex];
                 property.serializedObject.ApplyModifiedProperties();
             }
 
@@ -112,22 +109,28 @@ namespace Fsi.DataSystem.Libraries
         {
             VisualElement root = new();
 
-            Library<TID, TData> library = GetLibrary();
-            List<TData> data = library.Entries; 
-            List<string> names = data.Select(d => d.ID.ToString()).ToList();
-            names.Insert(0, "None");
+            List<Object> data = GetLibraryEntries();
+            List<string> names = new(data.Count + 1) { "None" };
+            for (int i = 0; i < data.Count; i++)
+            {
+                names.Add(GetEntryId(data[i]));
+            }
             
             int selectedIndex = 0;
-            if (property.objectReferenceValue && property.objectReferenceValue is ILibraryData<TID> t)
+            if (property.objectReferenceValue != null)
             {
-                selectedIndex = names.IndexOf(t.ID.ToString());
+                selectedIndex = names.IndexOf(GetEntryId(property.objectReferenceValue));
+                if (selectedIndex < 0)
+                {
+                    selectedIndex = 0;
+                }
             }
 
             ObjectField objectField = new(property.displayName)
-                                              {
-                                                  objectType = typeof(TData),
-                                                  value = property.objectReferenceValue
-                                              };
+                                      {
+                                          objectType = fieldInfo.FieldType,
+                                          value = property.objectReferenceValue
+                                      };
             objectField.SetEnabled(false);
 
             VisualElement selection = new()
@@ -157,7 +160,9 @@ namespace Fsi.DataSystem.Libraries
                                                       int index = dropdown.index;
                                                       index -= 1;
 
-                                                      property.objectReferenceValue = index == -1 ? null : data[index];
+                                                      property.objectReferenceValue = index == -1 || index >= data.Count
+                                                                                          ? null
+                                                                                          : data[index];
                                                       property.serializedObject.ApplyModifiedProperties();
                                                   });
 
@@ -270,10 +275,79 @@ namespace Fsi.DataSystem.Libraries
 
             return button;
         }
+
+        private List<Object> GetLibraryEntries()
+        {
+            List<Object> entries = new();
+
+            if (fieldInfo == null)
+            {
+                return entries;
+            }
+
+            if (!LibraryUtility.TryGetLibrary(fieldInfo.FieldType, out object library) || library == null)
+            {
+                return entries;
+            }
+
+            if (GetEntriesEnumerable(library) is not IEnumerable enumerable)
+            {
+                return entries;
+            }
+
+            foreach (object entry in enumerable)
+            {
+                if (entry is Object unityObject)
+                {
+                    entries.Add(unityObject);
+                }
+                else
+                {
+                    entries.Add(null);
+                }
+            }
+
+            return entries;
+        }
+
+        private static IEnumerable GetEntriesEnumerable(object library)
+        {
+            if (library == null)
+            {
+                return null;
+            }
+
+            PropertyInfo entriesProperty = library.GetType()
+                                                  .GetProperty("Entries", BindingFlags.Instance | BindingFlags.Public);
+            return entriesProperty?.GetValue(library) as IEnumerable;
+        }
+
+        private static string GetEntryId(Object entry)
+        {
+            if (entry == null)
+            {
+                return "<Missing>";
+            }
+
+            PropertyInfo idProperty = entry.GetType()
+                                           .GetProperty("ID", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            object idValue = idProperty?.GetValue(entry);
+            return idValue?.ToString() ?? "<Missing>";
+        }
         
         private bool IsCollectionElement(SerializedProperty property)
         {
             return property.propertyPath.Contains("Array.data[");
+        }
+    }
+
+    public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer
+        where TData : Object, ILibraryData<TID>
+    {
+        protected virtual Library<TID, TData> GetLibrary()
+        {
+            LibraryUtility.TryGetLibrary(out Library<TID, TData> library);
+            return library;
         }
     }
 }
