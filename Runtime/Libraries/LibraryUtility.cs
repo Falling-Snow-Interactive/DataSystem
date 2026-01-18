@@ -68,6 +68,14 @@ namespace Fsi.DataSystem.Libraries
             Type libraryType = GetLibraryType(dataType);
             if (libraryType == null)
             {
+                #if UNITY_EDITOR
+                if (TryResolveLibraryAsset(dataType, out library))
+                {
+                    LibrariesByDataType[dataType] = library;
+                    return true;
+                }
+                #endif
+
                 library = null;
                 return false;
             }
@@ -136,6 +144,52 @@ namespace Fsi.DataSystem.Libraries
             }
 
             return TryFindLibraryInScriptableObjects(libraryType, out library);
+        }
+
+        private static bool TryResolveLibraryAsset(Type dataType, out object library)
+        {
+            string[] guids = AssetDatabase.FindAssets($"t:{nameof(LibraryAsset)}");
+            LibraryAsset found = null;
+            string foundPath = null;
+
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                LibraryAsset asset = AssetDatabase.LoadAssetAtPath<LibraryAsset>(path);
+                if (!asset)
+                {
+                    continue;
+                }
+
+                Type assetDataType = asset.DataType;
+                if (assetDataType == null)
+                {
+                    continue;
+                }
+
+                if (assetDataType != dataType && !dataType.IsAssignableFrom(assetDataType))
+                {
+                    continue;
+                }
+
+                if (found != null)
+                {
+                    Debug.LogWarning($"LibraryUtility | Multiple assets found for data type {dataType.Name}. Using {foundPath}.");
+                    continue;
+                }
+
+                found = asset;
+                foundPath = path;
+            }
+
+            if (found != null)
+            {
+                library = found;
+                return true;
+            }
+
+            library = null;
+            return false;
         }
 
         // ReSharper disable Unity.PerformanceAnalysis

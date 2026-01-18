@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using Fsi.General.Extensions;
+using Fsi.DataSystem.Libraries;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,13 +12,6 @@ namespace Fsi.DataSystem.Libraries.Create
 {
     public class CreateLibraryEditor : EditorWindow
     {
-        private const string TemplatesFolder = "Packages/com.fallingsnowinteractive.datasystem/Templates";
-        private const string TemplateExtension = "template";
-        
-        private const string LibraryTemplate = "Library";
-        private const string AttributeTemplate = "Attribute";
-        private const string DrawerTemplate = "Drawer";
-        
         [SerializeField]
         private VisualTreeAsset treeAsset = null;
         
@@ -61,7 +55,7 @@ namespace Fsi.DataSystem.Libraries.Create
             namespaceField.value = PathToNamespace(path);
             idField.value = $"{n}ID";
             dataField.value = $"{n}Data";
-            libraryField.value = $"{n}Settings.Library";
+            libraryField.value = $"{n}Library";
             
             locationButton.clicked += () =>
                                       {
@@ -76,108 +70,62 @@ namespace Fsi.DataSystem.Libraries.Create
                                          string p = locationPath.text;
                                          string n = nameField.value;
                                          string s = namespaceField.value;
-                                         string i = idField.value;
                                          string d = dataField.value;
                                          string l = libraryField.value;
                                          
                                          if (string.IsNullOrWhiteSpace(p) 
                                              || string.IsNullOrWhiteSpace(n)
-                                             || string.IsNullOrWhiteSpace(s)
-                                             || string.IsNullOrWhiteSpace(i)
-                                             || string.IsNullOrWhiteSpace(d))
+                                             || string.IsNullOrWhiteSpace(d)
+                                             || string.IsNullOrWhiteSpace(l))
                                          {
                                              EditorUtility.DisplayDialog("Invalid Input", 
                                                                          "Ensure all fields have been filled.", 
                                                                          "OK");
                                              return;
                                          }
-                                         
-                                         string libPath = Path.Combine(p, "Libraries");
-                                         if (!Directory.Exists(libPath))
+
+                                         string libPath = GetLibraryRootPath(p);
+                                         if (string.IsNullOrWhiteSpace(libPath))
                                          {
-                                             Directory.CreateDirectory(libPath);
-                                         }
-                                         
-                                         string edPath = Path.Combine(libPath, "Editor");
-                                         if (!Directory.Exists(edPath))
-                                         {
-                                             Directory.CreateDirectory(edPath);
+                                             EditorUtility.DisplayDialog("Invalid Path",
+                                                                         "Libraries must be created within the project's Assets folder.",
+                                                                         "OK");
+                                             return;
                                          }
 
-                                         CreateLibrary(libPath, n, s, i ,d, l);
-                                         CreateLibraryAttribute(libPath, n, s,i,d,l);
-                                         CreateLibraryAttributeDrawer(edPath, n, s,i,d,l);
+                                         string dataTypeName = BuildDataTypeName(d, s);
+                                         if (!TryResolveDataType(dataTypeName, out Type dataType))
+                                         {
+                                             EditorUtility.DisplayDialog("Invalid Data Type",
+                                                                         $"Unable to resolve data type '{dataTypeName}'.",
+                                                                         "OK");
+                                             return;
+                                         }
+
+                                         CreateLibraryAsset(libPath, l, dataType);
                                          
                                          Close();
                                      };
         }
         
-        private void CreateLibrary(string path, string name, string nspace, string id, string data, string library)
+        private static void CreateLibraryAsset(string path, string libraryName, Type dataType)
         {
-            string output = FillTemplate(LibraryTemplate, name, nspace, id, data, library);
+            EnsureAssetFolder(path);
 
-            // Ensure target directory exists
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            LibraryAsset asset = CreateInstance<LibraryAsset>();
+            asset.SetDataType(dataType);
 
-            // Write new file
-            string fileName = $"{name}Library.cs";
-            string absoluteOutPath = Path.Combine(path, fileName);
-            File.WriteAllText(absoluteOutPath, output);
+            string assetPath = Path.Combine(path, $"{libraryName}.asset").Replace("\\", "/");
+            assetPath = AssetDatabase.GenerateUniqueAssetPath(assetPath);
 
-            // If saved under Assets/, refresh so Unity imports it
-            string projectAssets = Application.dataPath.Replace("\\", "/");
-            if (absoluteOutPath.Replace("\\", "/").StartsWith(projectAssets))
-            {
-                AssetDatabase.Refresh();
-            }
+            AssetDatabase.CreateAsset(asset, assetPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            Debug.Log($"Created {fileName} at: {absoluteOutPath}");
-        }
+            EditorGUIUtility.PingObject(asset);
+            Selection.activeObject = asset;
 
-        private void CreateLibraryAttribute(string path, string name, string nspace, string id, string data, string library)
-        {
-            string output = FillTemplate(AttributeTemplate, name, nspace, id, data, library);
-
-            // Write Attribute file
-            string filename = $"{name}LibraryAttribute.cs";
-            string absolutePath = Path.Combine(path, filename);
-            File.WriteAllText(absolutePath, output);
-
-            // If saved under Assets/, refresh so Unity imports it
-            string projectAssets = Application.dataPath.Replace("\\", "/");
-            if (absolutePath.Replace("\\", "/").StartsWith(projectAssets))
-            {
-                AssetDatabase.Refresh();
-            }
-
-            Debug.Log($"Created {filename} at: {absolutePath}");
-        }
-        
-        private void CreateLibraryAttributeDrawer(string path, string name, string nspace, string id, string data, string library)
-        {
-            string output = FillTemplate(DrawerTemplate, name, nspace, id, data, library);
-
-            // Write Drawer file
-            string filename = $"{name}LibraryAttributeDrawer.cs";
-            string absolutePath = Path.Combine(path, filename);
-            File.WriteAllText(absolutePath, output);
-
-            // If saved under Assets/, refresh so Unity imports it
-            string projectAssets = Application.dataPath.Replace("\\", "/");
-            if (absolutePath.Replace("\\", "/").StartsWith(projectAssets))
-            {
-                AssetDatabase.Refresh();
-            }
-
-            Debug.Log($"Created {filename} at: {absolutePath}");
-        }
-
-        private static string GetTemplateFullPath(string filename)
-        {
-            return $"{TemplatesFolder}/{filename}.{TemplateExtension}";
+            Debug.Log($"Created {libraryName}.asset at: {assetPath}");
         }
         
         private static string PathToNamespace(string path)
@@ -264,30 +212,92 @@ namespace Fsi.DataSystem.Libraries.Create
 
             return sb.ToString();
         }
-        
-        private static string FillTemplate(string template, string name, string nspace, string id, string data, string library)
-        {
-            string path = GetTemplateFullPath(template);
-            
-            string assetPath = path;
-            string fullPath = Path.GetFullPath(assetPath);
-            
-            if (!File.Exists(fullPath))
-            {
-                Debug.LogError($"Template file not found at: {fullPath}");
-                return "";
-            }
-            
-            string fileText = File.ReadAllText(fullPath);
-            
-            // Replace placeholder
-            string output = fileText.Replace("[Name]", name)
-                                    .Replace("[Namespace]", nspace)
-                                    .Replace("[ID]", id)
-                                    .Replace("[Data]", data)
-                                    .Replace("[Library]", library);
 
-            return output;
+        private static bool TryResolveDataType(string fullTypeName, out Type dataType)
+        {
+            dataType = Type.GetType(fullTypeName);
+            if (dataType != null)
+            {
+                return true;
+            }
+
+            foreach (System.Reflection.Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                dataType = assembly.GetType(fullTypeName);
+                if (dataType != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string BuildDataTypeName(string dataType, string nspace)
+        {
+            if (string.IsNullOrWhiteSpace(dataType))
+            {
+                return string.Empty;
+            }
+
+            if (dataType.Contains('.'))
+            {
+                return dataType;
+            }
+
+            return string.IsNullOrWhiteSpace(nspace) ? dataType : $"{nspace}.{dataType}";
+        }
+
+        private static string GetLibraryRootPath(string locationPath)
+        {
+            if (string.IsNullOrWhiteSpace(locationPath))
+            {
+                return null;
+            }
+
+            string projectAssets = Application.dataPath.Replace("\\", "/");
+            string normalizedPath = locationPath.Replace("\\", "/");
+
+            if (normalizedPath.StartsWith(projectAssets))
+            {
+                normalizedPath = "Assets" + normalizedPath.Substring(projectAssets.Length);
+            }
+
+            if (File.Exists(normalizedPath))
+            {
+                normalizedPath = Path.GetDirectoryName(normalizedPath)?.Replace("\\", "/");
+            }
+
+            if (string.IsNullOrWhiteSpace(normalizedPath))
+            {
+                return null;
+            }
+
+            if (!normalizedPath.StartsWith("Assets", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return Path.Combine(normalizedPath, "Libraries").Replace("\\", "/");
+        }
+
+        private static void EnsureAssetFolder(string assetPath)
+        {
+            if (AssetDatabase.IsValidFolder(assetPath))
+            {
+                return;
+            }
+
+            string parent = Path.GetDirectoryName(assetPath)?.Replace("\\", "/");
+            if (string.IsNullOrWhiteSpace(parent))
+            {
+                return;
+            }
+
+            EnsureAssetFolder(parent);
+
+            string folderName = Path.GetFileName(assetPath);
+            AssetDatabase.CreateFolder(parent, folderName);
         }
     }
 }
