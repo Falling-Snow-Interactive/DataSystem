@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
-using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 
 namespace Fsi.DataSystem
@@ -140,29 +140,5 @@ namespace Fsi.DataSystem
         }
         
         #endregion
-        
-        public virtual void Validate()
-        {
-            List<string> errors = new();
-
-            if (ID == null)
-            {
-                string msg = $"ID on {name} is null.";
-                Debug.LogError(msg, this);
-                errors.Add(msg);
-            }
-
-            if (!LocName.IsSet)
-            {
-                string msg = $"LocName not set on {name}.";
-                Debug.LogError(msg, this);
-                errors.Add(msg);
-            }
-
-            if (errors.Count > 0)
-            {
-                Assert.Fail(string.Join("\n", errors));
-            }
-        }
     }
 }

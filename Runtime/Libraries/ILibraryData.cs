@@ -6,7 +6,8 @@ namespace Fsi.DataSystem.Libraries
 
 		#if UNITY_EDITOR
 
-		public void Validate();
+		// TODO - Make it part of the validator - Kira
+		// public void Validate();
 
 		#endif
 	}

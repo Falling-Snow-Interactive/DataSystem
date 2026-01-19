@@ -1,7 +1,6 @@
 using System;
 using Fsi.DataSystem.Libraries;
 using Fsi.Localization;
-using NUnit.Framework;
 using UnityEngine;
 
 namespace Fsi.DataSystem
@@ -29,12 +28,6 @@ namespace Fsi.DataSystem
         {
             string s = id.ToString();
             return s;
-        }
-        
-        public void Validate()
-        {
-            Assert.IsNotNull(ID);
-            Assert.IsTrue(LocName.IsSet);
         }
     }
 }

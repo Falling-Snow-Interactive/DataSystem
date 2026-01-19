@@ -2,10 +2,9 @@
     "name": "Fsi.DataSystem.Runtime",
     "rootNamespace": "Fsi.DataSystem",
     "references": [
-        "GUID:f90ad862727b74b76a2c5e0dcf9510f7",
+        "GUID:2bafac87e7f4b9b418d9448d219b01ab",
         "GUID:0aede76063b894034a434ed76d1c99ba",
-        "GUID:343deaaf83e0cee4ca978e7df0b80d21",
-        "GUID:2bafac87e7f4b9b418d9448d219b01ab"
+        "GUID:f90ad862727b74b76a2c5e0dcf9510f7"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
