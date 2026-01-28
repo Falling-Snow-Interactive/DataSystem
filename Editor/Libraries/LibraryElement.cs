@@ -14,11 +14,6 @@ namespace Fsi.DataSystem.Libraries
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
 
-        private readonly List<TData> data;
-        private readonly Action<TData> changeCallback;
-
-        private Object selectedValue;
-
         public LibraryElement(Library<TID, TData> library, Object selected, Action<TData> onChanged)
             : this(library != null ? library.Entries : new List<TData>(), selected, onChanged)
         {
@@ -26,9 +21,8 @@ namespace Fsi.DataSystem.Libraries
 
         public LibraryElement(List<TData> entries, Object selected, Action<TData> onChanged)
         {
-            data = entries ?? new List<TData>();
-            selectedValue = selected;
-            changeCallback = onChanged;
+            List<TData> data = entries ?? new List<TData>();
+            Object selectedValue = selected;
 
             List<string> names = data.Select(entry => entry.ID.ToString()).ToList();
             names.Insert(0, "None");
@@ -65,7 +59,7 @@ namespace Fsi.DataSystem.Libraries
                                                       int index = dropdown.index - 1;
                                                       TData newValue = index < 0 ? null : data[index];
                                                       selectedValue = newValue;
-                                                      changeCallback?.Invoke(newValue);
+                                                      onChanged?.Invoke(newValue);
                                                   });
 
             selection.Add(dropdown);
@@ -100,12 +94,12 @@ namespace Fsi.DataSystem.Libraries
 
             Texture2D openSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenSpritePath);
             VisualElement openButton = CreateButton(openSprite, () =>
-                                                         {
-                                                             if (selectedValue != null)
-                                                             {
-                                                                 EditorUtility.OpenPropertyEditor(selectedValue);
-                                                             }
-                                                         }, label: "", tooltip: "Open object window.");
+                                                                {
+                                                                    if (selectedValue != null)
+                                                                    {
+                                                                        EditorUtility.OpenPropertyEditor(selectedValue);
+                                                                    }
+                                                                }, label: "", tooltip: "Open object window.");
 
             buttons.Add(selectButton);
             buttons.Add(openButton);
