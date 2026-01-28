@@ -4,8 +4,8 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - popoutTexture: {fileID: 2800000, guid: be61e835243bb4e7faedd3a69045525b, type: 3}
-  - selectTexture: {fileID: 2800000, guid: 8cff1f88180e34de7b65640e10b2cfef, type: 3}
+  - openTexture: {fileID: 2800000, guid: 580d64d3f59f54770bfe62269f2c400d, type: 3}
+  - highlightTexture: {fileID: 2800000, guid: 645383cda6f1547418fd3ff8745e057f, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

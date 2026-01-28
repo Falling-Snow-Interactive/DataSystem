@@ -11,10 +11,10 @@ namespace Fsi.DataSystem
     public class ScriptableDataEditor : Editor
     {
         [SerializeField]
-        private Texture2D popoutTexture;
+        private Texture2D openTexture;
 
         [SerializeField]
-        private Texture2D selectTexture;
+        private Texture2D highlightTexture;
         
         // Toolbar
         private Toolbar toolbar;
@@ -26,8 +26,8 @@ namespace Fsi.DataSystem
             toolbar = new Toolbar();
             root.Add(toolbar);
             
-            AddToolbarButton(popoutTexture, "Popout", OnPopoutButton);
-            AddToolbarButton(selectTexture, "Select", OnSelectButton);
+            AddToolbarButton(openTexture, "Popout", OnPopoutButton);
+            AddToolbarButton(highlightTexture, "Select", OnSelectButton);
             
             InspectorElement.FillDefaultInspector(root, serializedObject, this);
             
