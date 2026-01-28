@@ -15,12 +15,16 @@ namespace Fsi.DataSystem.Libraries
         where TData : Object, ILibraryData<TID>
     {
         #region Constants
-        private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
-        private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
+        
+        private const string OpenPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
+        private const string HighlightPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
+        
         #endregion
         
         protected abstract Library<TID,TData> GetLibrary();
 
+        #region IMGUI
+        
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return EditorGUIUtility.singleLineHeight;
@@ -36,10 +40,7 @@ namespace Fsi.DataSystem.Libraries
 
             // Build options: "None" + IDs
             List<string> names = new(data.Count + 1) { "None" };
-            for (int i = 0; i < data.Count; i++)
-            {
-                names.Add(data[i] != null ? data[i].ID.ToString() : "<Missing>");
-            }
+            names.AddRange(data.Select(t => t != null ? t.ID.ToString() : "<Missing>"));
 
             // Current selection
             int selectedIndex = 0;
@@ -77,8 +78,8 @@ namespace Fsi.DataSystem.Libraries
             }
 
             // Buttons
-            Texture2D selectIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(SelectSpritePath);
-            Texture2D openIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenSpritePath);
+            Texture2D selectIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(HighlightPath);
+            Texture2D openIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenPath);
 
             GUIContent selectContent = new(selectIcon, "Select object in project.");
             GUIContent openContent = new(openIcon, "Open object window.");
@@ -108,6 +109,10 @@ namespace Fsi.DataSystem.Libraries
             EditorGUI.EndProperty();
         }
         
+        #endregion
+        
+        #region UI Toolkit
+        
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             VisualElement root = new();
@@ -124,10 +129,10 @@ namespace Fsi.DataSystem.Libraries
             }
 
             ObjectField objectField = new(property.displayName)
-                                              {
-                                                  objectType = typeof(TData),
-                                                  value = property.objectReferenceValue
-                                              };
+                                      {
+                                          objectType = typeof(TData),
+                                          value = property.objectReferenceValue
+                                      };
             objectField.SetEnabled(false);
 
             VisualElement selection = new()
@@ -145,14 +150,19 @@ namespace Fsi.DataSystem.Libraries
             root.Add(selection);
 
             DropdownField dropdown = new(names, selectedIndex)
-            {
-                style =
-                {
-                    flexGrow = 1,
-                },
-            };
+                                     {
+                                         label = fieldInfo != null && fieldInfo
+                                                                      .GetCustomAttributes(typeof(HideLabelAttribute), true)
+                                                                      .Length > 0
+                                                     ? string.Empty
+                                                     : property.displayName,
+                                         style =
+                                         {
+                                             flexGrow = 1,
+                                         },
+                                     };
 
-            dropdown.RegisterValueChangedCallback(evt =>
+            dropdown.RegisterValueChangedCallback(_ =>
                                                   {
                                                       int index = dropdown.index;
                                                       index -= 1;
@@ -185,7 +195,7 @@ namespace Fsi.DataSystem.Libraries
 
             selection.Add(buttons);
 
-            Texture2D selectSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(SelectSpritePath);
+            Texture2D selectSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(HighlightPath);
             VisualElement selectButton = CreateButton(selectSprite, () =>
                                                                     {
                                                                         if (objectField.value != null)
@@ -195,14 +205,14 @@ namespace Fsi.DataSystem.Libraries
                                                                         }
                                                                     }, label: "", tooltip: "Select object in project.");
 
-            Texture2D openSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenSpritePath);
+            Texture2D openSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenPath);
             VisualElement openButton = CreateButton(openSprite, () =>
-                                                         {
-                                                             if (objectField.value)
-                                                             {
-                                                                 EditorUtility.OpenPropertyEditor(objectField.value);
-                                                             }
-                                                         }, label: "", tooltip: "Open object window.");
+                                                                {
+                                                                    if (objectField.value)
+                                                                    {
+                                                                        EditorUtility.OpenPropertyEditor(objectField.value);
+                                                                    }
+                                                                }, label: "", tooltip: "Open object window.");
 
             buttons.Add(selectButton);
             buttons.Add(openButton);
@@ -216,27 +226,27 @@ namespace Fsi.DataSystem.Libraries
             const float padding = 0;
             
             Button button = new()
-                                  {
-                                      text = label,
-                                      style =
-                                      {
-                                          flexGrow = 0,
-                                          flexShrink = 0,
+                            {
+                                text = label,
+                                style =
+                                {
+                                    flexGrow = 0,
+                                    flexShrink = 0,
                                           
-                                          width = EditorGUIUtility.singleLineHeight,
+                                    width = EditorGUIUtility.singleLineHeight,
                                           
-                                          paddingTop = padding,
-                                          paddingRight = padding,
-                                          paddingBottom = padding,
-                                          paddingLeft = padding,
+                                    paddingTop = padding,
+                                    paddingRight = padding,
+                                    paddingBottom = padding,
+                                    paddingLeft = padding,
                                           
-                                          marginTop = margin, 
-                                          marginRight = margin, 
-                                          marginBottom = margin, 
-                                          marginLeft = margin,
-                                      },
-                                      tooltip = tooltip,
-                                  };
+                                    marginTop = margin, 
+                                    marginRight = margin, 
+                                    marginBottom = margin, 
+                                    marginLeft = margin,
+                                },
+                                tooltip = tooltip,
+                            };
             
             button.clicked += callback;
 
@@ -271,9 +281,6 @@ namespace Fsi.DataSystem.Libraries
             return button;
         }
         
-        private bool IsCollectionElement(SerializedProperty property)
-        {
-            return property.propertyPath.Contains("Array.data[");
-        }
+        #endregion
     }
 }

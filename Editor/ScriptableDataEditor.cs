@@ -10,6 +10,9 @@ namespace Fsi.DataSystem
     [CustomEditor(typeof(ScriptableData<>), true)]
     public class ScriptableDataEditor : Editor
     {
+        private const string OpenPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
+        private const string HighlightPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
+        
         [SerializeField]
         private Texture2D openTexture;
 
@@ -25,6 +28,9 @@ namespace Fsi.DataSystem
 
             toolbar = new Toolbar();
             root.Add(toolbar);
+
+            openTexture ??= AssetDatabase.LoadAssetAtPath<Texture2D>(OpenPath);
+            highlightTexture ??= AssetDatabase.LoadAssetAtPath<Texture2D>(HighlightPath);
             
             AddToolbarButton(openTexture, "Popout", OnPopoutButton);
             AddToolbarButton(highlightTexture, "Select", OnSelectButton);
