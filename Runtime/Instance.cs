@@ -20,7 +20,7 @@ namespace Fsi.DataSystem
             Data = data;
         }
 
-        public void OnBeforeSerialize()
+        public virtual void OnBeforeSerialize()
         {
             name = Data == null ? "No Data" : $"{Data.ID}";
         }
