@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -21,10 +22,7 @@ namespace Fsi.DataSystem.Libraries
 
         #region IMGUI
         
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return EditorGUIUtility.singleLineHeight;
-        }
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => EditorGUIUtility.singleLineHeight;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -113,79 +111,15 @@ namespace Fsi.DataSystem.Libraries
         {
             Library<TID, TData> library = GetLibrary();
             return new LibraryElement<TID, TData>(
-                library,
-                property.objectReferenceValue,
-                selected =>
-                {
-                    property.objectReferenceValue = selected;
-                    property.serializedObject.ApplyModifiedProperties();
-                });
-        }
-
-        private VisualElement CreateButton(Texture2D icon, Action callback, string label = "", string tooltip = "")
-        {
-            const float margin = 1;
-            const float padding = 0;
-            
-            Button button = new()
-                                  {
-                                      text = label,
-                                      style =
-                                      {
-                                          flexGrow = 0,
-                                          flexShrink = 0,
-                                          
-                                          width = EditorGUIUtility.singleLineHeight,
-                                          
-                                          paddingTop = padding,
-                                          paddingRight = padding,
-                                          paddingBottom = padding,
-                                          paddingLeft = padding,
-                                          
-                                          marginTop = margin, 
-                                          marginRight = margin, 
-                                          marginBottom = margin, 
-                                          marginLeft = margin,
-                                      },
-                                      tooltip = tooltip,
-                                  };
-            
-            button.clicked += callback;
-
-            Image image = new()
-                          {
-                              image = icon,
-                              scaleMode = ScaleMode.ScaleToFit,
-                              pickingMode = PickingMode.Ignore,
-                              
-                              style =
-                              {
-                                  flexShrink = 1,
-                                  flexGrow = 1,
-                                  
-                                  width = Length.Auto(),
-                                  height = Length.Auto(),
-                                  
-                                  paddingTop = 0,
-                                  paddingRight = 0,
-                                  paddingBottom = 0,
-                                  paddingLeft = 0,
-                                  
-                                  marginTop = 0,
-                                  marginRight = 0,
-                                  marginBottom = 0,
-                                  marginLeft = 0,
-                              }
-                          };
-
-            button.Add(image);
-
-            return button;
+                                                  library,
+                                                  property.objectReferenceValue,
+                                                  selected =>
+                                                  {
+                                                      property.objectReferenceValue = selected;
+                                                      property.serializedObject.ApplyModifiedProperties();
+                                                  });
         }
         
-        private bool IsCollectionElement(SerializedProperty property)
-        {
-            return property.propertyPath.Contains("Array.data[");
-        }
+        #endregion
     }
 }
