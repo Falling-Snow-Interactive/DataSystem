@@ -23,7 +23,7 @@ namespace Fsi.DataSystem.Libraries
         #region IMGUI
         
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => EditorGUIUtility.singleLineHeight;
-
+        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // IMGUI fallback / support for older Unity inspector UI.
