@@ -1,0 +1,28 @@
+.library-element {
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.library-element__dropdown {
+    flex-grow: 1;
+    flex-shrink: 0;
+    
+    margin: 0 5px 0 0;
+}
+
+.library-element__button {
+    width: 18px;
+    height: 18px;
+    
+    padding: 0;
+    margin: 1px;
+}
+
+.library-element__button-icon {
+    flex-grow: 1;
+    flex-shrink: 1;
+    
+    padding: 0;
+    margin: 0;
+}
