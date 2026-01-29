@@ -5,7 +5,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
-using Spacer = Fsi.Ui.Dividers.Spacer;
 
 namespace Fsi.DataSystem.Libraries
 {
@@ -15,21 +14,20 @@ namespace Fsi.DataSystem.Libraries
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
         private const string StyleSheetPath = "Packages/com.fallingsnowinteractive.datasystem/Editor/Libraries/LibraryElement.uss";
 
-        private const string SelectionClassName = "library-element__selection";
+        private const string RootClassName = "library-element";
         private const string DropdownClassName = "library-element__dropdown";
-        private const string ButtonsClassName = "library-element__buttons";
         private const string ButtonClassName = "library-element__button";
         private const string ButtonIconClassName = "library-element__button-icon";
 
-        public LibraryElement(Library<TID, TData> library, Object selected, Action<TData> onChanged)
-            : this(library != null ? library.Entries : new List<TData>(), selected, onChanged)
+        public LibraryElement(string label, Library<TID, TData> library, Object selected, Action<TData> onChanged)
+            : this(label, library != null ? library.Entries : new List<TData>(), selected, onChanged)
         {
         }
 
-        public LibraryElement(List<TData> entries, Object selected, Action<TData> onChanged)
+        public LibraryElement(string label, List<TData> entries, Object selected, Action<TData> onChanged)
         {
             StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StyleSheetPath);
-            if (styleSheet != null)
+            if (styleSheet)
             {
                 styleSheets.Add(styleSheet);
             }
@@ -41,17 +39,17 @@ namespace Fsi.DataSystem.Libraries
             names.Insert(0, "None");
 
             int selectedIndex = 0;
-            if (selectedValue != null && selectedValue is ILibraryData<TID> current)
+            if (selectedValue && selectedValue is ILibraryData<TID> current)
             {
                 int found = names.IndexOf(current.ID.ToString());
                 selectedIndex = found >= 0 ? found : 0;
             }
 
-            VisualElement selection = new();
-            selection.AddToClassList(SelectionClassName);
-            Add(selection);
+            VisualElement root = new();
+            root.AddToClassList(RootClassName);
+            Add(root);
 
-            DropdownField dropdown = new(names, selectedIndex);
+            DropdownField dropdown = new(names, selectedIndex) { label = label };
             dropdown.AddToClassList(DropdownClassName);
 
             dropdown.RegisterValueChangedCallback(_ =>
@@ -62,14 +60,8 @@ namespace Fsi.DataSystem.Libraries
                                                       onChanged?.Invoke(newValue);
                                                   });
 
-            selection.Add(dropdown);
-            selection.Add(new Spacer());
-
-            VisualElement buttons = new();
-            buttons.AddToClassList(ButtonsClassName);
-
-            selection.Add(buttons);
-
+            root.Add(dropdown);
+            
             Texture2D selectSprite = AssetDatabase.LoadAssetAtPath<Texture2D>(SelectSpritePath);
             VisualElement selectButton = CreateButton(selectSprite, () =>
                                                                     {
@@ -88,8 +80,8 @@ namespace Fsi.DataSystem.Libraries
                                                                     }
                                                                 }, label: "", tooltip: "Open object window.");
 
-            buttons.Add(selectButton);
-            buttons.Add(openButton);
+            root.Add(selectButton);
+            root.Add(openButton);
         }
 
         private static VisualElement CreateButton(Texture2D icon, Action callback, string label = "", string tooltip = "")

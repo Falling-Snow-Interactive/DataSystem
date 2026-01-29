@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace Fsi.DataSystem.Libraries
 {
-    [CustomPropertyDrawer(typeof(LibraryAttribute), true)]
+    [CustomPropertyDrawer(type: typeof(LibraryAttribute), useForChildren: true)]
     public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer 
         where TData : Object, ILibraryData<TID>
     {
@@ -110,7 +110,8 @@ namespace Fsi.DataSystem.Libraries
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             Library<TID, TData> library = GetLibrary();
-            return new LibraryElement<TID, TData>(
+            bool hideLabel = fieldInfo != null && fieldInfo.GetCustomAttributes(typeof(HideLabelAttribute), true).Length > 0;
+            return new LibraryElement<TID, TData>(hideLabel ? "" : property.displayName,
                                                   library,
                                                   property.objectReferenceValue,
                                                   selected =>
