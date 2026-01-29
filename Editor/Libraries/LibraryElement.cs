@@ -11,8 +11,8 @@ namespace Fsi.DataSystem.Libraries
 {
     public class LibraryElement<TID, TData> : VisualElement where TData : Object, ILibraryData<TID>
     {
-        private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Select_Sprite.png";
-        private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Icon_Popout_Sprite.png";
+        private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
+        private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
 
         public LibraryElement(Library<TID, TData> library, Object selected, Action<TData> onChanged)
             : this(library != null ? library.Entries : new List<TData>(), selected, onChanged)
@@ -38,9 +38,10 @@ namespace Fsi.DataSystem.Libraries
                                       {
                                           style =
                                           {
+                                              flexDirection = FlexDirection.Row,
                                               flexGrow = 1,
                                               flexShrink = 0,
-                                              flexDirection = FlexDirection.Row,
+                                              
                                               height = EditorGUIUtility.singleLineHeight,
                                           }
                                       };
@@ -51,6 +52,7 @@ namespace Fsi.DataSystem.Libraries
                                          style =
                                          {
                                              flexGrow = 1,
+                                             flexShrink = 0,
                                          },
                                      };
 
@@ -70,10 +72,14 @@ namespace Fsi.DataSystem.Libraries
                                         style =
                                         {
                                             flexDirection = FlexDirection.Row,
+                                            flexGrow = 0,
+                                            flexShrink = 1,
+                                            
                                             paddingTop = 0,
                                             paddingRight = 0,
                                             paddingBottom = 0,
                                             paddingLeft = 0,
+                                            
                                             marginTop = 0,
                                             marginRight = 0,
                                             marginBottom = 0,
@@ -117,11 +123,14 @@ namespace Fsi.DataSystem.Libraries
                                 {
                                     flexGrow = 0,
                                     flexShrink = 0,
+                                    
                                     width = EditorGUIUtility.singleLineHeight,
+                                    
                                     paddingTop = padding,
                                     paddingRight = padding,
                                     paddingBottom = padding,
                                     paddingLeft = padding,
+                                    
                                     marginTop = margin,
                                     marginRight = margin,
                                     marginBottom = margin,
