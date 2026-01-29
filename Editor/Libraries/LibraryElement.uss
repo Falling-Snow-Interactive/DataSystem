@@ -1,0 +1,36 @@
+.library-element__selection {
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 0;
+    height: 18px;
+}
+
+.library-element__dropdown {
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.library-element__buttons {
+    flex-direction: row;
+    flex-grow: 0;
+    flex-shrink: 1;
+    padding: 0;
+    margin: 0;
+}
+
+.library-element__button {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 18px;
+    padding: 0;
+    margin: 1px;
+}
+
+.library-element__button-icon {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+}
