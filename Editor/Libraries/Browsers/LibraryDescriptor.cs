@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Fsi.DataSystem.Libraries.Browsers
 {
@@ -30,11 +30,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// </summary>
         public Func<Object> OwnerGetter { get; }
             
-        public LibraryDescriptor(string displayName,
-                                 string pathKey,
-                                 Func<object> getter,
-                                 Type libraryType,
-                                 Func<Object> ownerGetter = null)
+        public LibraryDescriptor(string displayName, string pathKey, Func<object> getter, Type libraryType, Func<Object> ownerGetter = null)
         {
             DisplayName = displayName;
             PathKey = pathKey;
