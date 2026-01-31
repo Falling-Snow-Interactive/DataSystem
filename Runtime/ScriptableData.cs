@@ -37,6 +37,7 @@ namespace Fsi.DataSystem
 
         [Header("Visuals")]
 
+        [BrowserProperty(Width = 75f)]
         [SerializeField]
         private Color color = Color.gray;
 

@@ -79,9 +79,12 @@ namespace Fsi.DataSystem.Libraries
             root.AddToClassList(RootClassName);
             Add(root);
 
-            Label labelElement = new(label);
-            labelElement.AddToClassList("library-element__label");
-            root.Add(labelElement);
+            if (!string.IsNullOrWhiteSpace(label))
+            {
+                Label labelElement = new(label);
+                labelElement.AddToClassList("library-element__label");
+                root.Add(labelElement);
+            }
 
             DropdownField dropdown = new(names, selectedIndex) { label = "" };
             dropdown.AddToClassList(DropdownClassName);

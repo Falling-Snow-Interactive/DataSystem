@@ -102,16 +102,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                  text = "Add Entry",
                              };
             toolbar.Add(addEntryButton);
-            // ToolbarButton refreshButton = new(RefreshLibraries)
-            //                               {
-            //                                   text = "Refresh",
-            //                               };
-            // toolbar.Add(refreshButton);
-            // editScriptButton = new ToolbarButton(OpenSelectedLibraryScript)
-            //                    {
-            //                        text = "Edit Library Script",
-            //                    };
-            // toolbar.Add(editScriptButton);
+            ToolbarButton refreshButton = new(RefreshLibraries)
+                                          {
+                                              text = "Refresh",
+                                          };
+            toolbar.Add(refreshButton);
             UpdateToolbarButtonStates();
 
             rootVisualElement.Add(toolbar);
