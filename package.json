@@ -1,6 +1,6 @@
 {
   "name": "com.fallingsnowinteractive.datasystem",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "FSI Data System",
   "description": "Data System package developed by Falling Snow Interactive.",
   "unity": "6000.2",

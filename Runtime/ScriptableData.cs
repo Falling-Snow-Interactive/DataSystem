@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
-using Fsi.Localization;
+using Fsi.DataSystem.Libraries.Browsers;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 
 namespace Fsi.DataSystem
@@ -28,20 +27,13 @@ namespace Fsi.DataSystem
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
         private T id;
-        
+
         [Header("Localization")]
-        
-        [InspectorName("Name"), Tooltip("Localization entry used to get the display name of this data entry.")]
+
+        [ListPopup]
         [SerializeField]
-        private LocEntry locName;
-        
-        [InspectorName("Plural"), Tooltip("Localized plural name. Falls back to the singular name if unset.")]
-        [SerializeField]
-        private LocEntry locPlural;
-        
-        [InspectorName("Description"), Tooltip("Localized description text for this data entry.")]
-        [SerializeField]
-        private LocEntry locDesc;
+        private LocDataProperties loc;
+        public LocDataProperties Loc => loc;
 
         [Header("Visuals")]
 
@@ -59,42 +51,7 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the unique identifier for this data entry.
         /// </summary>
-        public virtual T ID
-        {
-            get => id;
-            protected set => id = value;
-        }
-
-        /// <summary>
-        /// Gets the localization entry used for this data entry's display name.
-        /// </summary>
-        public LocEntry LocName => locName;
-        
-        /// <summary>
-        /// Gets the localization entry used for this data entry's plural name.
-        /// Falls back to <see cref="LocName"/> if no plural is set.
-        /// </summary>
-        public LocEntry LocPlural =>locPlural.IsSet ? locPlural : LocName;
-        
-        /// <summary>
-        /// Gets the localization entry used for this data entry's description.
-        /// </summary>
-        public LocEntry LocDesc => locDesc;
-        
-        /// <summary>
-        /// Gets the localized display name for this data entry.
-        /// </summary>
-        public string Name => LocName.GetLocalizedString("no_loc_name");
-        
-        /// <summary>
-        /// Gets the localized plural name for this data entry.
-        /// </summary>
-        public string Plural => LocPlural.GetLocalizedString("no_loc_plural");
-        
-        /// <summary>
-        /// Gets the localized description text for this data entry.
-        /// </summary>
-        public string Desc => LocDesc.GetLocalizedString("no_loc_desc");
+        public virtual T ID => id;
 
         public Color Color => color;
         

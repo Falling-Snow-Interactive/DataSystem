@@ -1,5 +1,6 @@
 using System;
 using Fsi.DataSystem.Libraries;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Fsi.DataSystem
@@ -8,7 +9,7 @@ namespace Fsi.DataSystem
     public abstract class Instance<TID, TData> : ISerializationCallbackReceiver
         where TData : ILibraryData<TID>
     {
-        [HideInInspector]
+        [HideInInspector, UsedImplicitly]
         [SerializeField]
         private string name;
         

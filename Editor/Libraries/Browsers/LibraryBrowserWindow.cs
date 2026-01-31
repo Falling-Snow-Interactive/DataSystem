@@ -326,7 +326,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            var serializedObject = new SerializedObject(sampleEntry);
+            SerializedObject serializedObject = new(sampleEntry);
             SerializedProperty iterator = serializedObject.GetIterator();
             bool enterChildren = true;
 
@@ -407,25 +407,25 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                       float width)
         {
             string propertyPath = property.propertyPath;
-            string title = property.displayName;
+            string colTitle = property.displayName;
             SerializedPropertyType propertyType = property.propertyType;
 
             TryGetFieldType(sampleEntry, propertyPath, out Type fieldType);
             TryGetFieldInfoFromPath(sampleEntry, propertyPath, out FieldInfo fieldInfo);
 
-            if (HasListPopupAttribute(fieldInfo) && IsSerializedClassProperty(property, fieldType))
+            if (HasListPopupAttribute(fieldInfo)) // && IsSerializedClassProperty(property, fieldType))
             {
-                return CreateSerializedClassPopupColumn(title, width, propertyPath);
+                return CreateSerializedClassPopupColumn(colTitle, width, propertyPath);
             }
 
             switch (propertyType)
             {
                 case SerializedPropertyType.Enum when fieldType is { IsEnum: true }:
-                    return CreateEnumPropertyColumn(title, width, propertyPath, fieldType);
+                    return CreateEnumPropertyColumn(colTitle, width, propertyPath, fieldType);
                 case SerializedPropertyType.Integer:
-                    return CreateIntegerPropertyColumn(title, width, propertyPath);
+                    return CreateIntegerPropertyColumn(colTitle, width, propertyPath);
                 case SerializedPropertyType.Color:
-                    return CreateColorPropertyColumn(title, width, propertyPath);
+                    return CreateColorPropertyColumn(colTitle, width, propertyPath);
                 case SerializedPropertyType.ObjectReference:
                 {
                     Type objectType = typeof(Object);
@@ -436,8 +436,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
                     return TryGetLibraryMapping(sampleEntry, propertyPath, fieldType, libraryMappingsByAttribute, 
                                                 libraryMappingsByDataType, out LibraryMapping mapping) 
-                               ? CreateLibraryPropertyColumn(title, width, propertyPath, mapping) 
-                               : CreateObjectPropertyColumn(title, width, propertyPath, objectType);
+                               ? CreateLibraryPropertyColumn(colTitle, width, propertyPath, mapping) 
+                               : CreateObjectPropertyColumn(colTitle, width, propertyPath, objectType);
                 }
                 case SerializedPropertyType.Generic:
                 case SerializedPropertyType.Boolean:
@@ -465,7 +465,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 case SerializedPropertyType.RenderingLayerMask:
                 case SerializedPropertyType.EntityId:
                 default:
-                    return CreatePropertyPathColumn(title, width, propertyPath);
+                    return CreatePropertyPathColumn(colTitle, width, propertyPath);
             }
         }
 
@@ -1313,6 +1313,60 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             return fieldType.GetFields(FieldBindingFlags).Any(IsLibraryField);
+        }
+        
+                private static void StripDecoratorDrawers(VisualElement root)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            // Unity can inject decorator visuals for attributes like [Header]/[Space].
+            // There is no public flag to disable them for UI Toolkit PropertyField, so we remove them post-bind.
+            RemoveDecoratorElementsRecursive(root);
+        }
+
+        private static void RemoveDecoratorElementsRecursive(VisualElement element)
+        {
+            for (int i = element.childCount - 1; i >= 0; i--)
+            {
+                VisualElement child = element[i];
+
+                if (IsDecoratorElement(child))
+                {
+                    element.RemoveAt(i);
+                    continue;
+                }
+
+                RemoveDecoratorElementsRecursive(child);
+            }
+        }
+
+        private static bool IsDecoratorElement(VisualElement element)
+        {
+            if (element == null)
+            {
+                return false;
+            }
+
+            // Known Unity USS classes/names used for decorator drawers (may vary by Unity version).
+            if (element.ClassListContains("unity-decorator-drawers") ||
+                element.ClassListContains("unity-decorator-drawer") ||
+                string.Equals(element.name, "unity-decorator-drawers", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Fallback heuristics: decorators often include "decorator" in the name/class.
+            if (!string.IsNullOrEmpty(element.name) &&
+                element.name.IndexOf("decorator", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            return element.GetClasses().Any(className => !string.IsNullOrEmpty(className) 
+                                                         && className.IndexOf("decorator", StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }
