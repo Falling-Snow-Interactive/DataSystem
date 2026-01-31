@@ -61,20 +61,35 @@ namespace Fsi.DataSystem
         
         #region Equality & Operators
 
-        public static bool operator ==(ScriptableData<T> a, ScriptableData<T> b) => a && b && a.ID.Equals(b.ID);
+        public static bool operator ==(ScriptableData<T> a, ScriptableData<T> b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            {
+                return false;
+            }
+
+            return EqualityComparer<T>.Default.Equals(a.ID, b.ID);
+        }
         public static bool operator !=(ScriptableData<T> a, ScriptableData<T> b) => !(a == b);
 
         public override bool Equals(object other)
         {
-            if (other is ScriptableData<T> so)
+            if (ReferenceEquals(this, other))
             {
-                return base.Equals(other) && EqualityComparer<T>.Default.Equals(id, so.id);
+                return true;
             }
 
-            return false;
+            return other is ScriptableData<T> so
+                && EqualityComparer<T>.Default.Equals(ID, so.ID);
         }
 
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ID);
+        public override int GetHashCode()
+            => ID is null ? base.GetHashCode() : EqualityComparer<T>.Default.GetHashCode(ID);
 
         #endregion
         
