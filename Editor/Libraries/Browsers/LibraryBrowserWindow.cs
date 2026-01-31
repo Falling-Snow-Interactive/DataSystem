@@ -28,6 +28,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
         private MultiColumnListView listView;
         private PopupField<string> libraryPopup;
+        private ToolbarButton editScriptButton;
         private string initialLibraryPath;
         private int selectedIndex;
         
@@ -89,6 +90,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                       {
                                                           selectedIndex = libraryNames.IndexOf(evt.newValue);
                                                           RefreshEntries();
+                                                          UpdateEditScriptButtonState();
                                                       });
             toolbar.Add(libraryPopup);
             
@@ -99,6 +101,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                               text = "Refresh",
                                           };
             toolbar.Add(refreshButton);
+            editScriptButton = new ToolbarButton(OpenSelectedLibraryScript)
+                               {
+                                   text = "Edit Library Script",
+                               };
+            toolbar.Add(editScriptButton);
+            UpdateEditScriptButtonState();
 
             rootVisualElement.Add(toolbar);
         }
@@ -160,6 +168,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             UpdateLibraryPopup();
             ApplyInitialSelection();
             RefreshEntries();
+            UpdateEditScriptButtonState();
         }
 
         /// <summary>
@@ -273,6 +282,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             listView.itemsSource = entries;
             listView.Rebuild();
             listView.RefreshItems();
+            UpdateEditScriptButtonState();
         }
 
         private LibraryDescriptor GetSelectedDescriptor()
@@ -306,6 +316,85 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             EditorUtility.OpenPropertyEditor(entry);
             EditorGUIUtility.PingObject(entry);
+        }
+
+        private void OpenSelectedLibraryScript()
+        {
+            LibraryDescriptor descriptor = GetSelectedDescriptor();
+            if (descriptor == null)
+            {
+                UpdateEditScriptButtonState();
+                return;
+            }
+
+            object library = descriptor.Getter?.Invoke();
+            MonoScript script = GetScriptForLibrary(library, out string warning);
+            if (script == null)
+            {
+                if (!string.IsNullOrWhiteSpace(warning))
+                {
+                    Debug.LogWarning(warning);
+                }
+
+                UpdateEditScriptButtonState();
+                return;
+            }
+
+            AssetDatabase.OpenAsset(script);
+        }
+
+        private MonoScript GetScriptForLibrary(object library, out string warning)
+        {
+            warning = null;
+
+            if (library == null)
+            {
+                return null;
+            }
+
+            if (library is ScriptableObject scriptableObject)
+            {
+                MonoScript script = MonoScript.FromScriptableObject(scriptableObject);
+                if (script == null)
+                {
+                    warning = $"Unable to resolve script for library {scriptableObject.GetType().Name}.";
+                }
+
+                return script;
+            }
+
+            if (library is MonoBehaviour monoBehaviour)
+            {
+                MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
+                if (script == null)
+                {
+                    warning = $"Unable to resolve script for library {monoBehaviour.GetType().Name}.";
+                }
+
+                return script;
+            }
+
+            warning = $"Unable to resolve script for library type {library.GetType().Name}.";
+            return null;
+        }
+
+        private void UpdateEditScriptButtonState()
+        {
+            if (editScriptButton == null)
+            {
+                return;
+            }
+
+            LibraryDescriptor descriptor = GetSelectedDescriptor();
+            if (descriptor == null)
+            {
+                editScriptButton.SetEnabled(false);
+                return;
+            }
+
+            object library = descriptor.Getter?.Invoke();
+            MonoScript script = GetScriptForLibrary(library, out _);
+            editScriptButton.SetEnabled(script != null);
         }
 
         #endregion
