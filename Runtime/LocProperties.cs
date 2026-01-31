@@ -31,11 +31,35 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the localized display name or a fallback string if missing.
         /// </summary>
-        public string Name => LocName.GetLocalizedString("no_loc_name");
+        public string Name
+        {
+            get
+            {
+                if (LocName == null)
+                {
+                    // Fallback used when no localization entry is assigned.
+                    return "no_loc_name";
+                }
+
+                return LocName.GetLocalizedString("no_loc_name");
+            }
+        }
         
         /// <summary>
         /// Gets the localized description text or a fallback string if missing.
         /// </summary>
-        public string Desc => LocDesc.GetLocalizedString("no_loc_desc");
+        public string Desc
+        {
+            get
+            {
+                if (LocDesc == null)
+                {
+                    // Fallback used when no localization entry is assigned.
+                    return "no_loc_desc";
+                }
+
+                return LocDesc.GetLocalizedString("no_loc_desc");
+            }
+        }
     }
 }
