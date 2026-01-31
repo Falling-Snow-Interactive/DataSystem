@@ -12,7 +12,7 @@ namespace Fsi.DataSystem.Libraries
     /// </summary>
     [CustomPropertyDrawer(type: typeof(LibraryAttribute), useForChildren: true)]
     public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer 
-        where TData : Object, ILibraryData<TID>
+        where TData : Object, IData<TID>
     {
         #region Constants
         
@@ -47,11 +47,11 @@ namespace Fsi.DataSystem.Libraries
 
             // Build options: "None" + IDs
             List<string> names = new(data.Count + 1) { "None" };
-            names.AddRange(data.Select(t => t != null ? t.ID.ToString() : "<Missing>"));
+            names.AddRange(data.Select(t => t ? t.ID.ToString() : "<Missing>"));
 
             // Current selection
             int selectedIndex = 0;
-            if (property.objectReferenceValue != null && property.objectReferenceValue is ILibraryData<TID> current)
+            if (property.objectReferenceValue != null && property.objectReferenceValue is IData<TID> current)
             {
                 string currentId = current.ID.ToString();
                 int found = names.IndexOf(currentId);
@@ -97,7 +97,7 @@ namespace Fsi.DataSystem.Libraries
             {
                 if (GUI.Button(selectRect, selectContent))
                 {
-                    if (value != null)
+                    if (value)
                     {
                         EditorGUIUtility.PingObject(value);
                         Selection.activeObject = value;

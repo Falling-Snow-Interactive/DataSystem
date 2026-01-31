@@ -4,11 +4,11 @@ using JetBrains.Annotations;
 namespace Fsi.DataSystem.Libraries.Browsers
 {
     /// <summary>
-    /// Marks a serialized class field to be shown in a popup inspector window.
+    /// Hides a field from the library browser list view columns.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     [UsedImplicitly]
-    public sealed class ListPopupAttribute : Attribute
+    public sealed class HideInBrowserAttribute : Attribute
     {
     }
 }

@@ -11,7 +11,7 @@ namespace Fsi.DataSystem.Libraries
     /// <summary>
     /// UI Toolkit element that provides a library dropdown with select/open buttons.
     /// </summary>
-    public class LibraryElement<TID, TData> : VisualElement where TData : Object, ILibraryData<TID>
+    public class LibraryElement<TID, TData> : VisualElement where TData : Object, IData<TID>
     {
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
@@ -48,7 +48,7 @@ namespace Fsi.DataSystem.Libraries
             names.Insert(0, "None");
 
             int selectedIndex = 0;
-            if (selectedValue && selectedValue is ILibraryData<TID> current)
+            if (selectedValue && selectedValue is IData<TID> current)
             {
                 int found = names.IndexOf(current.ID.ToString());
                 selectedIndex = found >= 0 ? found : 0;

@@ -10,7 +10,7 @@ namespace Fsi.DataSystem
     /// </summary>
     /// <typeparam name="T">The identifier type for this data entry.</typeparam>
     [Serializable]
-    public class SerializableDataEntry<T> : ILibraryData<T>
+    public class SerializableDataEntry<T> : IData<T>
     {
         [Header("Data")]
 

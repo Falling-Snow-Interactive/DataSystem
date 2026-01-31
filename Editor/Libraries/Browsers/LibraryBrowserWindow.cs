@@ -16,69 +16,6 @@ namespace Fsi.DataSystem.Libraries.Browsers
     /// </summary>
     public abstract class LibraryBrowserWindow : EditorWindow
     {
-        protected sealed class LibraryDescriptor
-        {
-            /// <summary>
-            /// Gets the display name shown in the library popup.
-            /// </summary>
-            public string DisplayName { get; }
-            /// <summary>
-            /// Gets the serialized path used for initial selection lookup.
-            /// </summary>
-            public string PathKey { get; }
-            /// <summary>
-            /// Gets a delegate that resolves the library instance.
-            /// </summary>
-            public Func<object> Getter { get; }
-            /// <summary>
-            /// Gets the library type for reflection lookups.
-            /// </summary>
-            public Type LibraryType { get; }
-            
-            public LibraryDescriptor(string displayName, string pathKey, Func<object> getter, Type libraryType)
-            {
-                DisplayName = displayName;
-                PathKey = pathKey;
-                Getter = getter;
-                LibraryType = libraryType;
-            }
-        }
-
-        protected sealed class LibraryMapping
-        {
-            /// <summary>
-            /// Gets a delegate that resolves the library instance.
-            /// </summary>
-            public Func<object> Getter { get; }
-            /// <summary>
-            /// Gets the library type.
-            /// </summary>
-            public Type LibraryType { get; }
-            /// <summary>
-            /// Gets the library identifier type.
-            /// </summary>
-            public Type IdType { get; }
-            /// <summary>
-            /// Gets the library data type.
-            /// </summary>
-            public Type DataType { get; }
-            
-            public LibraryMapping(Func<object> getter, Type libraryType)
-            {
-                Getter = getter;
-                LibraryType = libraryType;
-                if (libraryType != null && libraryType.IsGenericType)
-                {
-                    Type[] arguments = libraryType.GetGenericArguments();
-                    if (arguments.Length == 2)
-                    {
-                        IdType = arguments[0];
-                        DataType = arguments[1];
-                    }
-                }
-            }
-        }
-
         private const string OpenIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
         protected const string LibraryIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Library_Icon.png";
 
@@ -98,10 +35,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// Gets the library descriptors shown in the popup.
         /// </summary>
         protected abstract IEnumerable<LibraryDescriptor> GetLibraryDescriptors();
+        
         /// <summary>
         /// Maps attribute types to libraries for object reference fields.
         /// </summary>
         protected abstract Dictionary<Type, LibraryMapping> GetLibraryMappingsByAttribute();
+        
         /// <summary>
         /// Maps data types to libraries for object reference fields.
         /// </summary>
@@ -365,7 +304,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            UnityEditor.EditorUtility.OpenPropertyEditor(entry);
+            EditorUtility.OpenPropertyEditor(entry);
             EditorGUIUtility.PingObject(entry);
         }
 
@@ -455,7 +394,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                     return true;
                 }
 
-                if (field.GetCustomAttribute<HideInListAttribute>() != null)
+                if (field.GetCustomAttribute<HideInBrowserAttribute>() != null)
                 {
                     return true;
                 }
@@ -537,45 +476,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
         }
 
         /// <summary>
-        /// Checks whether the property represents a serializable inline class.
-        /// </summary>
-        private static bool IsSerializedClassProperty(SerializedProperty property, Type fieldType)
-        {
-            if (property == null || fieldType == null)
-            {
-                return false;
-            }
-
-            if (property.isArray)
-            {
-                return false;
-            }
-
-            if (typeof(Object).IsAssignableFrom(fieldType))
-            {
-                return false;
-            }
-
-            if (!fieldType.IsClass)
-            {
-                return false;
-            }
-
-            if (property.propertyType != SerializedPropertyType.Generic &&
-                property.propertyType != SerializedPropertyType.ManagedReference)
-            {
-                return false;
-            }
-
-            return fieldType.IsSerializable || fieldType.GetCustomAttribute<SerializableAttribute>() != null;
-        }
-
-        /// <summary>
         /// Checks for the list popup attribute on a field.
         /// </summary>
         private static bool HasListPopupAttribute(FieldInfo fieldInfo)
         {
-            return fieldInfo != null && fieldInfo.GetCustomAttribute<ListPopupAttribute>() != null;
+            return fieldInfo != null && fieldInfo.GetCustomAttribute<BrowserPopupAttribute>() != null;
         }
 
         /// <summary>
@@ -919,7 +824,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return CreateObjectPropertyColumn(title, width, propertyPath, typeof(Object));
             }
 
-            var column = genericMethod.Invoke(this, new object[] { title, width, propertyPath, mapping }) as Column;
+            Column column = genericMethod.Invoke(this, new object[] { title, width, propertyPath, mapping }) as Column;
             return column ?? CreateObjectPropertyColumn(title, width, propertyPath, typeof(Object));
         }
 
@@ -930,10 +835,9 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                                      float width,
                                                                                      string propertyPath,
                                                                                      LibraryMapping mapping)
-            where TLibraryData : Object, ILibraryData<TLibraryID>
+            where TLibraryData : Object, IData<TLibraryID>
         {
-            Func<Library<TLibraryID, TLibraryData>> libraryGetter =
-                () => mapping?.Getter?.Invoke() as Library<TLibraryID, TLibraryData>;
+            Func<Library<TLibraryID, TLibraryData>> libraryGetter = () => mapping?.Getter?.Invoke() as Library<TLibraryID, TLibraryData>;
 
             return new Column
                    {
@@ -969,11 +873,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                           return;
                                       }
 
-                                      List<TLibraryData> entries = libraryGetter.Invoke()?.Entries;
+                                      List<TLibraryData> datas = libraryGetter.Invoke()?.Entries;
                                       TLibraryData selected = property.objectReferenceValue as TLibraryData;
 
                                       LibraryElement<TLibraryID, TLibraryData> libraryElement = new("",
-                                                                                                    entries,
+                                                                                                    datas,
                                                                                                     selected,
                                                                                                     newValue =>
                                                                                                     {
@@ -1018,10 +922,10 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
                                       if (!TryGetEntry(index, out Object data))
                                       {
-                                          var empty = new PropertyField
-                                                      {
-                                                          label = string.Empty
-                                                      };
+                                          PropertyField empty = new()
+                                                                {
+                                                                    label = string.Empty
+                                                                };
                                           empty.SetEnabled(false);
                                           element.Add(empty);
                                           return;
@@ -1038,10 +942,10 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                           return;
                                       }
 
-                                      var field = new PropertyField
-                                                  {
-                                                      label = string.Empty
-                                                  };
+                                      PropertyField field = new()
+                                                            {
+                                                                label = string.Empty
+                                                            };
                                       field.BindProperty(property);
 
                                       EventCallback<SerializedPropertyChangeEvent> callback = _ =>
@@ -1070,7 +974,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// </summary>
         private Column CreateOpenColumn()
         {
-            var openIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenIconPath);
+            Texture2D openIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(OpenIconPath);
             return new Column
                    {
                        title = string.Empty,
@@ -1114,7 +1018,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// Creates a mapping wrapper for a library getter.
         /// </summary>
         protected static LibraryMapping CreateLibraryMapping<TLibraryID, TLibraryData>(Func<Library<TLibraryID, TLibraryData>> getter)
-            where TLibraryData : Object, ILibraryData<TLibraryID>
+            where TLibraryData : Object, IData<TLibraryID>
         {
             return new LibraryMapping(() => getter?.Invoke(), typeof(Library<TLibraryID, TLibraryData>));
         }
@@ -1197,14 +1101,14 @@ namespace Fsi.DataSystem.Libraries.Browsers
         }
 
         /// <summary>
-        /// Checks if a type implements <see cref="ILibraryData{T}"/>.
+        /// Checks if a type implements <see cref="IData{T}"/>.
         /// </summary>
         private static bool ImplementsLibraryData(Type type)
         {
             return type != null
                    && type.GetInterfaces().Any(interfaceType =>
                                                    interfaceType.IsGenericType
-                                                   && interfaceType.GetGenericTypeDefinition() == typeof(ILibraryData<>));
+                                                   && interfaceType.GetGenericTypeDefinition() == typeof(IData<>));
         }
 
         /// <summary>
@@ -1256,7 +1160,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            UnityEditor.EditorUtility.SetDirty(target);
+            EditorUtility.SetDirty(target);
             AssetDatabase.SaveAssets();
         }
 
@@ -1466,63 +1370,6 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             return fieldType.GetFields(FieldBindingFlags).Any(IsLibraryField);
-        }
-        
-        /// <summary>
-        /// Removes decorator drawer visuals injected by Unity.
-        /// </summary>
-        private static void StripDecoratorDrawers(VisualElement root)
-        {
-            if (root == null)
-            {
-                return;
-            }
-
-            // Unity can inject decorator visuals for attributes like [Header]/[Space].
-            // There is no public flag to disable them for UI Toolkit PropertyField, so we remove them post-bind.
-            RemoveDecoratorElementsRecursive(root);
-        }
-
-        private static void RemoveDecoratorElementsRecursive(VisualElement element)
-        {
-            for (int i = element.childCount - 1; i >= 0; i--)
-            {
-                VisualElement child = element[i];
-
-                if (IsDecoratorElement(child))
-                {
-                    element.RemoveAt(i);
-                    continue;
-                }
-
-                RemoveDecoratorElementsRecursive(child);
-            }
-        }
-
-        private static bool IsDecoratorElement(VisualElement element)
-        {
-            if (element == null)
-            {
-                return false;
-            }
-
-            // Known Unity USS classes/names used for decorator drawers (may vary by Unity version).
-            if (element.ClassListContains("unity-decorator-drawers") ||
-                element.ClassListContains("unity-decorator-drawer") ||
-                string.Equals(element.name, "unity-decorator-drawers", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            // Fallback heuristics: decorators often include "decorator" in the name/class.
-            if (!string.IsNullOrEmpty(element.name) &&
-                element.name.IndexOf("decorator", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                return true;
-            }
-
-            return element.GetClasses().Any(className => !string.IsNullOrEmpty(className) 
-                                                         && className.IndexOf("decorator", StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }

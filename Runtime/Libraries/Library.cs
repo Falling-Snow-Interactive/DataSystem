@@ -12,10 +12,11 @@ namespace Fsi.DataSystem.Libraries
     /// <typeparam name="TEntry">The entry type stored in this library.</typeparam>
     [Serializable]
     public class Library<TID, TEntry> 
-        where TEntry : ILibraryData<TID>
+        where TEntry : IData<TID>
     {
         [SerializeField]
-        private TID defaultID = default;
+        private TID defaultID;
+        
         /// <summary>
         /// Gets the default entry defined by <see cref="defaultID"/>.
         /// </summary>
@@ -24,6 +25,7 @@ namespace Fsi.DataSystem.Libraries
         
         [SerializeField]
         private List<TEntry> entries = new();
+        
         /// <summary>
         /// Gets the list of entries stored in this library.
         /// </summary>

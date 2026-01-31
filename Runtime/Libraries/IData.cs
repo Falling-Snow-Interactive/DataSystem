@@ -4,7 +4,7 @@ namespace Fsi.DataSystem.Libraries
 	/// Defines a library data entry with a stable identifier.
 	/// </summary>
 	/// <typeparam name="T">The identifier type.</typeparam>
-	public interface ILibraryData<out T>
+	public interface IData<out T>
 	{
 		/// <summary>
 		/// Gets the identifier for this entry.

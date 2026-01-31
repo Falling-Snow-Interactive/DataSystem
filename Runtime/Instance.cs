@@ -12,7 +12,7 @@ namespace Fsi.DataSystem
     /// <typeparam name="TData">The data type stored in the library.</typeparam>
     [Serializable]
     public abstract class Instance<TID, TData> : ISerializationCallbackReceiver
-        where TData : ILibraryData<TID>
+        where TData : IData<TID>
     {
         [HideInInspector, UsedImplicitly]
         [SerializeField]

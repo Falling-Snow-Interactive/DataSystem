@@ -8,7 +8,7 @@ namespace Fsi.DataSystem.Ui
     /// </summary>
     /// <typeparam name="TData">The data type displayed by this widget.</typeparam>
     /// <typeparam name="TID">The identifier type for the data.</typeparam>
-    public abstract class DataObjectWidget<TData, TID> : MonoBehaviour where TData : ILibraryData<TID>
+    public abstract class DataObjectWidget<TData, TID> : MonoBehaviour where TData : IData<TID>
     {
         /// <summary>
         /// Gets the data currently bound to this widget.
