@@ -105,12 +105,18 @@ namespace Fsi.DataSystem.Libraries
 
         /// <summary>
         /// Returns a random entry from the library.
+        /// Throws an <see cref="InvalidOperationException"/> when the library has no entries.
         /// </summary>
         /// <returns>A random entry.</returns>
         public TEntry Random()
         {
-            // Unity int Random.Range uses an exclusive max, so Count - 1 keeps the last entry unreachable.
-            return Entries[UnityEngine.Random.Range(0, Entries.Count - 1)];
+            if (entries == null || entries.Count == 0)
+            {
+                throw new InvalidOperationException("Library | Cannot select a random entry from an empty library.");
+            }
+
+            // Unity int Random.Range uses an exclusive max; Count ensures the last entry is reachable.
+            return entries[UnityEngine.Random.Range(0, entries.Count)];
         }
 
         /// <summary>
