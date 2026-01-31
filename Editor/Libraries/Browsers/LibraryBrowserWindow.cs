@@ -30,6 +30,9 @@ namespace Fsi.DataSystem.Libraries.Browsers
         private PopupField<string> libraryPopup;
         private string initialLibraryPath;
         private int selectedIndex;
+        private int selectedEntryIndex = -1;
+        private Object selectedEntry;
+        private ToolbarButton editScriptButton;
         
         /// <summary>
         /// Gets the library descriptors shown in the popup.
@@ -100,6 +103,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                           };
             toolbar.Add(refreshButton);
 
+            editScriptButton = new ToolbarButton(OpenSelectedEntryScript)
+                               {
+                                   text = "Edit Entry Script",
+                               };
+            editScriptButton.SetEnabled(false);
+            toolbar.Add(editScriptButton);
+
             rootVisualElement.Add(toolbar);
         }
 
@@ -118,6 +128,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                            }
                        };
 
+            listView.onSelectionChange += OnSelectionChange;
             BuildColumnsFromSerializedProperties();
 
             ScrollView scrollView = listView.Q<ScrollView>();
@@ -273,6 +284,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
             listView.itemsSource = entries;
             listView.Rebuild();
             listView.RefreshItems();
+            listView.ClearSelection();
+            UpdateSelectedEntry(null, -1);
         }
 
         private LibraryDescriptor GetSelectedDescriptor()
@@ -306,6 +319,67 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             EditorUtility.OpenPropertyEditor(entry);
             EditorGUIUtility.PingObject(entry);
+        }
+
+        private void OnSelectionChange(IEnumerable<object> selection)
+        {
+            int index = listView.selectedIndex;
+            Object entry = TryGetEntry(index, out var selected) ? selected : null;
+            UpdateSelectedEntry(entry, index);
+        }
+
+        private void UpdateSelectedEntry(Object entry, int index)
+        {
+            selectedEntry = entry;
+            selectedEntryIndex = entry ? index : -1;
+            UpdateEditScriptButtonState();
+        }
+
+        private void UpdateEditScriptButtonState()
+        {
+            if (editScriptButton == null)
+            {
+                return;
+            }
+
+            editScriptButton.SetEnabled(selectedEntry);
+        }
+
+        private void OpenSelectedEntryScript()
+        {
+            if (!selectedEntry)
+            {
+                return;
+            }
+
+            OpenEntryScript(selectedEntry);
+        }
+
+        private static void OpenEntryScript(Object entry)
+        {
+            if (!entry)
+            {
+                return;
+            }
+
+            MonoScript script = null;
+            if (entry is ScriptableObject scriptableObject)
+            {
+                script = MonoScript.FromScriptableObject(scriptableObject);
+            }
+            else if (entry is MonoBehaviour monoBehaviour)
+            {
+                script = MonoScript.FromMonoBehaviour(monoBehaviour);
+            }
+
+            if (script != null)
+            {
+                AssetDatabase.OpenAsset(script);
+            }
+            else
+            {
+                Debug.LogWarning($"Entry '{entry.name}' has no editable script.", entry);
+            }
         }
 
         #endregion
