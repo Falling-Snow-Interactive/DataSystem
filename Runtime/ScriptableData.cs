@@ -13,7 +13,7 @@ namespace Fsi.DataSystem
     /// </summary>
     /// <typeparam name="T">Type used to ID the data objects.</typeparam>
     public abstract class ScriptableData<T> : ScriptableObject, 
-                                              ILibraryData<T>, 
+                                              IData<T>, 
                                               ISerializationCallbackReceiver
     {
         #region Asset Menu Constants
@@ -30,10 +30,10 @@ namespace Fsi.DataSystem
 
         [Header("Localization")]
 
-        [ListPopup]
+        [BrowserPopup]
         [SerializeField]
-        private LocDataProperties loc;
-        public LocDataProperties Loc => loc;
+        private LocProperties loc;
+        public LocProperties Loc => loc;
 
         [Header("Visuals")]
 

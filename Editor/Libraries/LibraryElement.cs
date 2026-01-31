@@ -8,7 +8,10 @@ using Object = UnityEngine.Object;
 
 namespace Fsi.DataSystem.Libraries
 {
-    public class LibraryElement<TID, TData> : VisualElement where TData : Object, ILibraryData<TID>
+    /// <summary>
+    /// UI Toolkit element that provides a library dropdown with select/open buttons.
+    /// </summary>
+    public class LibraryElement<TID, TData> : VisualElement where TData : Object, IData<TID>
     {
         private const string SelectSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
         private const string OpenSpritePath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
@@ -19,11 +22,17 @@ namespace Fsi.DataSystem.Libraries
         private const string ButtonClassName = "library-element__button";
         private const string ButtonIconClassName = "library-element__button-icon";
 
+        /// <summary>
+        /// Creates a library element using the entries from the provided library.
+        /// </summary>
         public LibraryElement(string label, Library<TID, TData> library, Object selected, Action<TData> onChanged)
             : this(label, library != null ? library.Entries : new List<TData>(), selected, onChanged)
         {
         }
 
+        /// <summary>
+        /// Creates a library element with explicit entries.
+        /// </summary>
         public LibraryElement(string label, List<TData> entries, Object selected, Action<TData> onChanged)
         {
             StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StyleSheetPath);
@@ -39,7 +48,7 @@ namespace Fsi.DataSystem.Libraries
             names.Insert(0, "None");
 
             int selectedIndex = 0;
-            if (selectedValue && selectedValue is ILibraryData<TID> current)
+            if (selectedValue && selectedValue is IData<TID> current)
             {
                 int found = names.IndexOf(current.ID.ToString());
                 selectedIndex = found >= 0 ? found : 0;
@@ -54,6 +63,7 @@ namespace Fsi.DataSystem.Libraries
 
             dropdown.RegisterValueChangedCallback(_ =>
                                                   {
+                                                      // Offset by 1 because index 0 is the "None" sentinel.
                                                       int index = dropdown.index - 1;
                                                       TData newValue = index < 0 ? null : data[index];
                                                       selectedValue = newValue;
@@ -84,6 +94,9 @@ namespace Fsi.DataSystem.Libraries
             root.Add(openButton);
         }
 
+        /// <summary>
+        /// Creates an icon button for the element toolbar actions.
+        /// </summary>
         private static VisualElement CreateButton(Texture2D icon, Action callback, string label = "", string tooltip = "")
         {
             Button button = new()
