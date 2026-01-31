@@ -32,6 +32,20 @@ namespace Fsi.DataSystem.Libraries.Browsers
         private ToolbarButton editScriptButton;
         private string initialLibraryPath;
         private int selectedIndex;
+
+        private sealed class ColumnSortMetadata
+        {
+            public ColumnSortMetadata(string propertyPath, SerializedPropertyType propertyType, Type fieldType)
+            {
+                PropertyPath = propertyPath;
+                PropertyType = propertyType;
+                FieldType = fieldType;
+            }
+
+            public string PropertyPath { get; }
+            public SerializedPropertyType PropertyType { get; }
+            public Type FieldType { get; }
+        }
         
         /// <summary>
         /// Gets the library descriptors shown in the popup.
@@ -132,6 +146,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                            }
                        };
             listView.itemIndexChanged += OnListItemIndexChanged;
+            RegisterSortingCallback();
 
             BuildColumnsFromSerializedProperties();
 
@@ -286,6 +301,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             BuildColumnsFromSerializedProperties();
+            ApplySorting();
             listView.itemsSource = entries;
             listView.Rebuild();
             listView.RefreshItems();
@@ -562,17 +578,23 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             if (HasListPopupAttribute(fieldInfo)) // && IsSerializedClassProperty(property, fieldType))
             {
-                return CreateSerializedClassPopupColumn(colTitle, width, propertyPath);
+                Column listPopupColumn = CreateSerializedClassPopupColumn(colTitle, width, propertyPath);
+                ConfigureSortableColumn(listPopupColumn, propertyPath, propertyType, fieldType);
+                return listPopupColumn;
             }
 
+            Column column;
             switch (propertyType)
             {
                 case SerializedPropertyType.Enum when fieldType is { IsEnum: true }:
-                    return CreateEnumPropertyColumn(colTitle, width, propertyPath, fieldType);
+                    column = CreateEnumPropertyColumn(colTitle, width, propertyPath, fieldType);
+                    break;
                 case SerializedPropertyType.Integer:
-                    return CreateIntegerPropertyColumn(colTitle, width, propertyPath);
+                    column = CreateIntegerPropertyColumn(colTitle, width, propertyPath);
+                    break;
                 case SerializedPropertyType.Color:
-                    return CreateColorPropertyColumn(colTitle, width, propertyPath);
+                    column = CreateColorPropertyColumn(colTitle, width, propertyPath);
+                    break;
                 case SerializedPropertyType.ObjectReference:
                 {
                     Type objectType = typeof(Object);
@@ -581,10 +603,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
                         objectType = fieldType;
                     }
 
-                    return TryGetLibraryMapping(sampleEntry, propertyPath, fieldType, libraryMappingsByAttribute, 
-                                                libraryMappingsByDataType, out LibraryMapping mapping) 
-                               ? CreateLibraryPropertyColumn(colTitle, width, propertyPath, mapping) 
+                    column = TryGetLibraryMapping(sampleEntry, propertyPath, fieldType, libraryMappingsByAttribute,
+                                                  libraryMappingsByDataType, out LibraryMapping mapping)
+                               ? CreateLibraryPropertyColumn(colTitle, width, propertyPath, mapping)
                                : CreateObjectPropertyColumn(colTitle, width, propertyPath, objectType);
+                    break;
                 }
                 case SerializedPropertyType.Generic:
                 case SerializedPropertyType.Boolean:
@@ -612,8 +635,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 case SerializedPropertyType.RenderingLayerMask:
                 case SerializedPropertyType.EntityId:
                 default:
-                    return CreatePropertyPathColumn(colTitle, width, propertyPath);
+                    column = CreatePropertyPathColumn(colTitle, width, propertyPath);
+                    break;
             }
+
+            ConfigureSortableColumn(column, propertyPath, propertyType, fieldType);
+            return column;
         }
 
         /// <summary>
@@ -1121,6 +1148,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                        title = string.Empty,
                        width = 25,
                        resizable = false,
+                       sortable = false,
                        makeCell = () => new Button { iconImage = openIcon },
                        bindCell = (element, index) =>
                                   {
@@ -1554,6 +1582,201 @@ namespace Fsi.DataSystem.Libraries.Browsers
         }
 
         #endregion
+
+        private void RegisterSortingCallback()
+        {
+            if (listView == null)
+            {
+                return;
+            }
+
+            RegisterSortingCallback("columnSortingChanged");
+            RegisterSortingCallback("sortingChanged");
+        }
+
+        private void RegisterSortingCallback(string eventName)
+        {
+            EventInfo eventInfo = typeof(MultiColumnListView).GetEvent(eventName);
+            if (eventInfo == null)
+            {
+                return;
+            }
+
+            Type handlerType = eventInfo.EventHandlerType;
+            if (handlerType == null)
+            {
+                return;
+            }
+
+            MethodInfo invokeInfo = handlerType.GetMethod("Invoke");
+            if (invokeInfo == null)
+            {
+                return;
+            }
+
+            int parameterCount = invokeInfo.GetParameters().Length;
+            MethodInfo handlerMethod = parameterCount == 0
+                                           ? GetType().GetMethod(nameof(HandleSortingChanged),
+                                                                 BindingFlags.Instance | BindingFlags.NonPublic)
+                                           : GetType().GetMethod(nameof(HandleSortingChangedWithArgs),
+                                                                 BindingFlags.Instance | BindingFlags.NonPublic);
+            if (handlerMethod == null)
+            {
+                return;
+            }
+
+            Delegate handler = Delegate.CreateDelegate(handlerType, this, handlerMethod);
+            eventInfo.AddEventHandler(listView, handler);
+        }
+
+        private void HandleSortingChanged()
+        {
+            ApplySorting();
+        }
+
+        private void HandleSortingChangedWithArgs(object _)
+        {
+            ApplySorting();
+        }
+
+        private void ApplySorting()
+        {
+            if (listView == null || entries.Count == 0)
+            {
+                return;
+            }
+
+            Column activeColumn = GetActiveSortColumn();
+            if (activeColumn == null || activeColumn.userData is not ColumnSortMetadata metadata)
+            {
+                return;
+            }
+
+            ColumnSortDirection direction = activeColumn.sortDirection;
+            if (direction == ColumnSortDirection.None)
+            {
+                return;
+            }
+
+            bool ascending = direction == ColumnSortDirection.Ascending;
+            entries.Sort((left, right) => CompareEntries(left, right, metadata, ascending));
+            listView.RefreshItems();
+        }
+
+        private Column GetActiveSortColumn()
+        {
+            if (listView?.columns == null)
+            {
+                return null;
+            }
+
+            foreach (Column column in listView.columns)
+            {
+                if (column.sortDirection != ColumnSortDirection.None)
+                {
+                    return column;
+                }
+            }
+
+            return null;
+        }
+
+        private static int CompareEntries(Object left, Object right, ColumnSortMetadata metadata, bool ascending)
+        {
+            int result = CompareEntries(left, right, metadata);
+            return ascending ? result : -result;
+        }
+
+        private static int CompareEntries(Object left, Object right, ColumnSortMetadata metadata)
+        {
+            if (ReferenceEquals(left, right))
+            {
+                return 0;
+            }
+
+            if (!left)
+            {
+                return 1;
+            }
+
+            if (!right)
+            {
+                return -1;
+            }
+
+            SerializedProperty leftProperty = GetProperty(left, metadata.PropertyPath);
+            SerializedProperty rightProperty = GetProperty(right, metadata.PropertyPath);
+
+            if (leftProperty == null && rightProperty == null)
+            {
+                return 0;
+            }
+
+            if (leftProperty == null)
+            {
+                return 1;
+            }
+
+            if (rightProperty == null)
+            {
+                return -1;
+            }
+
+            switch (metadata.PropertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    return leftProperty.intValue.CompareTo(rightProperty.intValue);
+                case SerializedPropertyType.Float:
+                    return leftProperty.floatValue.CompareTo(rightProperty.floatValue);
+                case SerializedPropertyType.String:
+                    return string.Compare(leftProperty.stringValue ?? string.Empty,
+                                          rightProperty.stringValue ?? string.Empty,
+                                          StringComparison.OrdinalIgnoreCase);
+                case SerializedPropertyType.Enum:
+                    return leftProperty.intValue.CompareTo(rightProperty.intValue);
+                case SerializedPropertyType.ObjectReference:
+                    return string.Compare(GetObjectName(leftProperty.objectReferenceValue),
+                                          GetObjectName(rightProperty.objectReferenceValue),
+                                          StringComparison.OrdinalIgnoreCase);
+                case SerializedPropertyType.Boolean:
+                    return leftProperty.boolValue.CompareTo(rightProperty.boolValue);
+                default:
+                    return string.Compare(leftProperty.ToString(),
+                                          rightProperty.ToString(),
+                                          StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        private static SerializedProperty GetProperty(Object entry, string propertyPath)
+        {
+            if (!entry || string.IsNullOrEmpty(propertyPath))
+            {
+                return null;
+            }
+
+            SerializedObject serializedObject = new(entry);
+            serializedObject.Update();
+            return serializedObject.FindProperty(propertyPath);
+        }
+
+        private static string GetObjectName(Object obj)
+        {
+            return obj ? obj.name : string.Empty;
+        }
+
+        private static void ConfigureSortableColumn(Column column,
+                                                     string propertyPath,
+                                                     SerializedPropertyType propertyType,
+                                                     Type fieldType)
+        {
+            if (column == null)
+            {
+                return;
+            }
+
+            column.sortable = true;
+            column.userData = new ColumnSortMetadata(propertyPath, propertyType, fieldType);
+        }
         
         /// <summary>
         /// Recursively collects library fields from a container type.
