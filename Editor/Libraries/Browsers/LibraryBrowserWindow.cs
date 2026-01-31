@@ -723,7 +723,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                       button.text = "Open";
                                       button.SetEnabled(true);
 
-                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, groupName, definitions);
+                                      Action callback = () => GroupedPropertiesPopupWindow.Show(data, groupName, entries);
                                       button.clicked += callback;
                                       button.userData = callback;
                                   },
