@@ -358,64 +358,38 @@ namespace Fsi.DataSystem.Libraries.Browsers
             EditorGUIUtility.PingObject(entry);
         }
 
-        private void OpenSelectedLibraryScript()
-        {
-            LibraryDescriptor descriptor = GetSelectedDescriptor();
-            if (descriptor == null)
-            {
-                UpdateToolbarButtonStates();
-                return;
-            }
-
-            object library = descriptor.Getter?.Invoke();
-            MonoScript script = GetScriptForLibrary(library, out string warning);
-            if (script == null)
-            {
-                if (!string.IsNullOrWhiteSpace(warning))
-                {
-                    Debug.LogWarning(warning);
-                }
-
-                UpdateToolbarButtonStates();
-                return;
-            }
-
-            AssetDatabase.OpenAsset(script);
-        }
-
-        private MonoScript GetScriptForLibrary(object library, out string warning)
+        private static MonoScript GetScriptForLibrary(object library, out string warning)
         {
             warning = null;
 
-            if (library == null)
+            switch (library)
             {
-                return null;
-            }
-
-            if (library is ScriptableObject scriptableObject)
-            {
-                MonoScript script = MonoScript.FromScriptableObject(scriptableObject);
-                if (script == null)
+                case null:
+                    return null;
+                case ScriptableObject scriptableObject:
                 {
-                    warning = $"Unable to resolve script for library {scriptableObject.GetType().Name}.";
+                    MonoScript script = MonoScript.FromScriptableObject(scriptableObject);
+                    if (script == null)
+                    {
+                        warning = $"Unable to resolve script for library {scriptableObject.GetType().Name}.";
+                    }
+
+                    return script;
                 }
-
-                return script;
-            }
-
-            if (library is MonoBehaviour monoBehaviour)
-            {
-                MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
-                if (script == null)
+                case MonoBehaviour monoBehaviour:
                 {
-                    warning = $"Unable to resolve script for library {monoBehaviour.GetType().Name}.";
+                    MonoScript script = MonoScript.FromMonoBehaviour(monoBehaviour);
+                    if (script == null)
+                    {
+                        warning = $"Unable to resolve script for library {monoBehaviour.GetType().Name}.";
+                    }
+
+                    return script;
                 }
-
-                return script;
+                default:
+                    warning = $"Unable to resolve script for library type {library.GetType().Name}.";
+                    return null;
             }
-
-            warning = $"Unable to resolve script for library type {library.GetType().Name}.";
-            return null;
         }
 
         private void UpdateToolbarButtonStates()
@@ -509,8 +483,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             foreach (GroupedColumnData groupedColumn in groupedColumns
-                         .OrderBy(data => data.SortOrder)
-                         .ThenBy(data => data.GroupName, StringComparer.Ordinal))
+                                                        .OrderBy(data => data.SortOrder)
+                                                        .ThenBy(data => data.GroupName, StringComparer.Ordinal))
             {
                 listView.columns.Add(groupedColumn.Column);
             }
@@ -725,8 +699,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                 IReadOnlyList<GroupedPropertyData> properties)
         {
             List<GroupedPropertyDefinition> definitions = properties
-                .Select(property => new GroupedPropertyDefinition(property.Property.propertyPath, property.DisplayName))
-                .ToList();
+                                                          .Select(property => new GroupedPropertyDefinition(property.Property.propertyPath, property.DisplayName))
+                                                          .ToList();
 
             return new Column
                    {
