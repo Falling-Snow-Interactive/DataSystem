@@ -64,8 +64,11 @@ There is no default menu item in this package. To open the browser, create your 
 ### Attribute behaviors
 
 - **`LibraryAttribute`**: Apply this to a `ScriptableData` (or other library entry) reference field to use the custom library selector in the inspector. The drawer renders a dropdown of library entries with quick buttons to ping or open the selected asset.【F:Runtime/Libraries/LibraryAttribute.cs†L7-L13】【F:Editor/Libraries/LibraryAttributeDrawer.cs†L11-L123】
+- **`BrowserPropertyAttribute`**: Apply this to a serialized field to override the browser column display name, hide the column, or show the field in a popup column via named parameters such as `DisplayName`, `HideInBrowser`, and `Popup`.【F:Runtime/Libraries/Browsers/BrowserPropertyAttribute.cs†L1-L34】
 - **`HideInBrowserAttribute`**: Apply this to a serialized field to omit it from the browser’s columns.【F:Runtime/Libraries/Browsers/HideInBrowserAttribute.cs†L7-L15】【F:Editor/Libraries/Browsers/LibraryBrowserWindow.cs†L371-L411】
 - **`BrowserPopupAttribute`**: Apply this to a serialized class field to replace its column with an “Open” button that launches a popup inspector for that field, keeping the browser table tidy.【F:Runtime/Libraries/Browsers/BrowserPopupAttribute.cs†L7-L15】【F:Editor/Libraries/Browsers/LibraryBrowserWindow.cs†L471-L535】【F:Editor/Libraries/Browsers/SerializedClassPopupWindow.cs†L7-L83】
+
+> Migration note: `BrowserPropertyAttribute` is a superset of the older `HideInBrowserAttribute` and `BrowserPopupAttribute`. Existing usages remain supported, and you can adopt the new attribute incrementally as needed.【F:Runtime/Libraries/Browsers/BrowserPropertyAttribute.cs†L1-L34】【F:Editor/Libraries/Browsers/LibraryBrowserWindow.cs†L520-L636】
 
 ```csharp
 using UnityEngine;

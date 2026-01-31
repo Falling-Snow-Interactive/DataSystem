@@ -535,7 +535,14 @@ namespace Fsi.DataSystem.Libraries.Browsers
                     return true;
                 }
 
-                if (field.GetCustomAttribute<HideInBrowserAttribute>() != null)
+                BrowserPropertyAttribute browserPropertyAttribute = field.GetCustomAttribute<BrowserPropertyAttribute>();
+                if (browserPropertyAttribute?.HideInBrowser == true)
+                {
+                    return true;
+                }
+
+                if (browserPropertyAttribute?.HideInBrowser == null
+                    && field.GetCustomAttribute<HideInBrowserAttribute>() != null)
                 {
                     return true;
                 }
@@ -559,6 +566,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             TryGetFieldType(sampleEntry, propertyPath, out Type fieldType);
             TryGetFieldInfoFromPath(sampleEntry, propertyPath, out FieldInfo fieldInfo);
+            BrowserPropertyAttribute browserPropertyAttribute = fieldInfo?.GetCustomAttribute<BrowserPropertyAttribute>();
+
+            if (!string.IsNullOrWhiteSpace(browserPropertyAttribute?.DisplayName))
+            {
+                colTitle = browserPropertyAttribute.DisplayName;
+            }
 
             if (HasListPopupAttribute(fieldInfo)) // && IsSerializedClassProperty(property, fieldType))
             {
@@ -621,7 +634,19 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// </summary>
         private static bool HasListPopupAttribute(FieldInfo fieldInfo)
         {
-            return fieldInfo != null && fieldInfo.GetCustomAttribute<BrowserPopupAttribute>() != null;
+            if (fieldInfo == null)
+            {
+                return false;
+            }
+
+            BrowserPropertyAttribute browserPropertyAttribute = fieldInfo.GetCustomAttribute<BrowserPropertyAttribute>();
+            if (browserPropertyAttribute?.Popup == true)
+            {
+                return true;
+            }
+
+            return browserPropertyAttribute?.Popup == null
+                   && fieldInfo.GetCustomAttribute<BrowserPopupAttribute>() != null;
         }
 
         /// <summary>
