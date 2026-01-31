@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 
 namespace Fsi.DataSystem.Libraries
 {
+    /// <summary>
+    /// Draws a library selector for fields decorated with <see cref="LibraryAttribute"/>.
+    /// </summary>
     [CustomPropertyDrawer(type: typeof(LibraryAttribute), useForChildren: true)]
     public abstract class LibraryAttributeDrawer<TID, TData> : PropertyDrawer 
         where TData : Object, ILibraryData<TID>
@@ -18,12 +21,22 @@ namespace Fsi.DataSystem.Libraries
         
         #endregion
         
+        /// <summary>
+        /// Resolves the library used to populate the selector.
+        /// </summary>
+        /// <returns>The library instance.</returns>
         protected abstract Library<TID,TData> GetLibrary();
 
         #region IMGUI
         
+        /// <summary>
+        /// Returns the height of the IMGUI popup row.
+        /// </summary>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => EditorGUIUtility.singleLineHeight;
         
+        /// <summary>
+        /// Draws the IMGUI fallback for the library selector.
+        /// </summary>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             // IMGUI fallback / support for older Unity inspector UI.
@@ -107,6 +120,9 @@ namespace Fsi.DataSystem.Libraries
         
         #region UI Toolkit
         
+        /// <summary>
+        /// Builds the UI Toolkit selector for the property.
+        /// </summary>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             Library<TID, TData> library = GetLibrary();
@@ -116,6 +132,7 @@ namespace Fsi.DataSystem.Libraries
                                                   property.objectReferenceValue,
                                                   selected =>
                                                   {
+                                                      // Push selection changes back into the serialized object.
                                                       property.objectReferenceValue = selected;
                                                       property.serializedObject.ApplyModifiedProperties();
                                                   });

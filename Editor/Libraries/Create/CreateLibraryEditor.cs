@@ -9,6 +9,9 @@ using UnityEngine.UIElements;
 
 namespace Fsi.DataSystem.Libraries.Create
 {
+    /// <summary>
+    /// Editor window that scaffolds new library, attribute, and drawer files.
+    /// </summary>
     public class CreateLibraryEditor : EditorWindow
     {
         private const string TemplatesFolder = "Packages/com.fallingsnowinteractive.datasystem/Templates";
@@ -31,6 +34,9 @@ namespace Fsi.DataSystem.Libraries.Create
         private TextField dataField; 
         private TextField libraryField; 
 
+        /// <summary>
+        /// Opens the Create Library window.
+        /// </summary>
         [MenuItem("Assets/Create/Falling Snow Interactive/Create Library")]
         public static void OpenWindow()
         {
@@ -38,6 +44,9 @@ namespace Fsi.DataSystem.Libraries.Create
             wnd.titleContent = new GUIContent("Create Library");
         }
         
+        /// <summary>
+        /// Builds the UI and wires up template generation events.
+        /// </summary>
         public void CreateGUI()
         {
             VisualElement root = rootVisualElement;
@@ -65,6 +74,7 @@ namespace Fsi.DataSystem.Libraries.Create
             
             locationButton.clicked += () =>
                                       {
+                                          // Pick a new output folder for generated files.
                                           string p = EditorUtility.OpenFolderPanel("Choose Location", 
                                                                                    "", "");
                                           locationPath.text = p;
@@ -73,6 +83,7 @@ namespace Fsi.DataSystem.Libraries.Create
             Button confirmButton = root.Q<Button>("confirm_button");
             confirmButton.clicked += () =>
                                      {
+                                         // Gather and validate user input before file generation.
                                          string p = locationPath.text;
                                          string n = nameField.value;
                                          string s = namespaceField.value;
@@ -175,11 +186,17 @@ namespace Fsi.DataSystem.Libraries.Create
             Debug.Log($"Created {filename} at: {absolutePath}");
         }
 
+        /// <summary>
+        /// Builds the full path to a template file.
+        /// </summary>
         private static string GetTemplateFullPath(string filename)
         {
             return $"{TemplatesFolder}/{filename}.{TemplateExtension}";
         }
         
+        /// <summary>
+        /// Converts a path into a namespace based on project root settings.
+        /// </summary>
         private static string PathToNamespace(string path)
         {
             string root = EditorSettings.projectGenerationRootNamespace;
@@ -249,6 +266,9 @@ namespace Fsi.DataSystem.Libraries.Create
             return root;
         }
 
+        /// <summary>
+        /// Cleans a folder name so it can be used as a namespace segment.
+        /// </summary>
         private static string CleanNamespacePart(string s)
         {
             // Only letters, digits, and underscore allowed for namespace parts

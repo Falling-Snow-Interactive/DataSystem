@@ -5,11 +5,17 @@ using UnityEngine.UIElements;
 
 namespace Fsi.DataSystem.Libraries.Browsers
 {
+    /// <summary>
+    /// Utility window that displays a serialized property in a popup inspector.
+    /// </summary>
     public class SerializedClassPopupWindow : EditorWindow
     {
         private Object targetObject;
         private string propertyPath;
 
+        /// <summary>
+        /// Opens a popup inspector for the specified serialized property.
+        /// </summary>
         public static void Show(Object target, string propertyPath, string title)
         {
             if (!target || string.IsNullOrEmpty(propertyPath))
@@ -22,6 +28,9 @@ namespace Fsi.DataSystem.Libraries.Browsers
             window.ShowUtility();
         }
 
+        /// <summary>
+        /// Initializes the popup with a target and property path.
+        /// </summary>
         private void Initialize(Object target, string path, string title)
         {
             targetObject = target;
@@ -30,6 +39,9 @@ namespace Fsi.DataSystem.Libraries.Browsers
             minSize = new Vector2(360f, 260f);
         }
 
+        /// <summary>
+        /// Builds the popup UI for the serialized property.
+        /// </summary>
         public void CreateGUI()
         {
             if (!targetObject)
@@ -58,12 +70,16 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                         serializedObject.ApplyModifiedProperties();
                                                                         MarkDirty(targetObject);
                                                                     };
+            // Store the callback so it can be cleaned up if the element is rebuilt.
             propertyField.RegisterCallback(callback);
             propertyField.userData = callback;
 
             rootVisualElement.Add(propertyField);
         }
 
+        /// <summary>
+        /// Marks the target asset dirty and saves it.
+        /// </summary>
         private static void MarkDirty(Object target)
         {
             if (!target)
