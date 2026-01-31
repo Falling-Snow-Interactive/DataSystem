@@ -67,7 +67,12 @@ namespace Fsi.DataSystem.Libraries
         {
             foreach (TEntry e in Entries)
             {
-                if (e.ID.Equals(id))
+                if (e == null)
+                {
+                    continue;
+                }
+
+                if (EqualityComparer<TID>.Default.Equals(e.ID, id))
                 {
                     entry = e;
                     return true;
@@ -87,7 +92,19 @@ namespace Fsi.DataSystem.Libraries
             List<TID> ids = new();
             foreach (TEntry entry in Entries)
             {
-                ids.Add(entry.ID);
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                TID id = entry.ID;
+                // Skip null IDs to avoid inserting invalid identifiers into the list.
+                if (id is null)
+                {
+                    continue;
+                }
+
+                ids.Add(id);
             }
 
             return ids;
