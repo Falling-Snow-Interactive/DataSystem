@@ -1,3 +1,5 @@
+using Fsi.Validation;
+
 namespace Fsi.DataSystem.Libraries
 {
 	/// <summary>
@@ -13,8 +15,7 @@ namespace Fsi.DataSystem.Libraries
 
 		#if UNITY_EDITOR
 
-		// TODO - Make it part of the validator - Kira
-		// public void Validate();
+		public ValidatorResult Validate();
 
 		#endif
 	}

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.DataSystem.Libraries.Browsers;
+using Fsi.Validation;
 using UnityEngine;
 
 namespace Fsi.DataSystem
@@ -102,5 +103,7 @@ namespace Fsi.DataSystem
         }
         
         #endregion
+
+        public abstract ValidatorResult Validate();
     }
 }

@@ -18,6 +18,7 @@
   "dependencies": {
     "com.fallingsnowinteractive.localization": "0.0.1",
     "com.fallingsnowinteractive.ui": "0.0.2",
-    "com.fallingsnowinteractive.general": "0.1.0"
+    "com.fallingsnowinteractive.general": "0.1.0",
+    "com.fallingsnowinteractive.validationsystem": "0.0.1"
   }
 }
