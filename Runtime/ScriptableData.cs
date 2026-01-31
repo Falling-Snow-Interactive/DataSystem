@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.DataSystem.Libraries.Browsers;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Fsi.DataSystem
 {
