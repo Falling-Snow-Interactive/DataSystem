@@ -31,6 +31,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
         public int SortOrder { get; set; }
 
         /// <summary>
+        /// Optional grouping name. When set, the field is removed from the main table columns
+        /// and shown inside the group popup instead.
+        /// </summary>
+        public string Group { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public float Width { get; set; } = 140f;
