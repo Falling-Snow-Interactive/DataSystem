@@ -724,8 +724,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                 bool resizable,
                                                 IReadOnlyList<GroupedPropertyData> properties)
         {
-            List<GroupedPropertyDefinition> definitions = properties
-                .Select(property => new GroupedPropertyDefinition(property.Property.propertyPath, property.DisplayName))
+            List<(string PropertyPath, string DisplayName)> entries = properties
+                .Select(property => (property.Property.propertyPath, property.DisplayName))
                 .ToList();
 
             return new Column
@@ -749,7 +749,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                       button.text = "Open";
                                       button.SetEnabled(true);
 
-                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, groupName, definitions);
+                                      Action callback = () => GroupedPropertiesPopupWindow.Show(data, groupName, entries);
                                       button.clicked += callback;
                                       button.userData = callback;
                                   },
