@@ -6,6 +6,9 @@ using UnityEngine.UIElements;
 
 namespace Fsi.DataSystem
 {
+    /// <summary>
+    /// Adds quick action buttons for ScriptableData assets (popout and select).
+    /// </summary>
     [CanEditMultipleObjects]
     [CustomEditor(typeof(ScriptableData<>), true)]
     public class ScriptableDataEditor : Editor
@@ -22,6 +25,9 @@ namespace Fsi.DataSystem
         // Toolbar
         private Toolbar toolbar;
         
+        /// <summary>
+        /// Builds the custom inspector UI with a toolbar and default fields.
+        /// </summary>
         public override VisualElement CreateInspectorGUI()
         {
             VisualElement root = new();
@@ -42,6 +48,9 @@ namespace Fsi.DataSystem
 
         #region Toolbar
 
+        /// <summary>
+        /// Adds a toolbar button to the inspector toolbar.
+        /// </summary>
         private void AddToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
         {
             if (toolbar == null)
@@ -54,6 +63,9 @@ namespace Fsi.DataSystem
             toolbar.Add(b);
         }
 
+        /// <summary>
+        /// Creates a toolbar button configured with icon, tooltip, and click handler.
+        /// </summary>
         private static VisualElement CreateToolbarButton(Texture2D icon, string tooltip, Action onClickedAction)
         {
             ToolbarButton button = new(onClickedAction)
@@ -73,6 +85,9 @@ namespace Fsi.DataSystem
 
         #region Buttons Clicked Calls
         
+        /// <summary>
+        /// Opens the current target in a separate property editor window.
+        /// </summary>
         private void OnPopoutButton()
         {
             if (target == null)
@@ -83,6 +98,9 @@ namespace Fsi.DataSystem
             EditorUtility.OpenPropertyEditor(target);
         }
 
+        /// <summary>
+        /// Pings the current target in the project window.
+        /// </summary>
         private void OnSelectButton()
         {
             if (target == null)
@@ -100,6 +118,9 @@ namespace Fsi.DataSystem
         
         #region Helpers
         
+        /// <summary>
+        /// Shows or hides a bound property field by its serialized path.
+        /// </summary>
         private static void ShowPropertyByPath(bool show, VisualElement root, string propertyPath)
         {
             if (TryGetPropertyByPath(root, propertyPath, out PropertyField field))
@@ -108,6 +129,9 @@ namespace Fsi.DataSystem
             }
         }
         
+        /// <summary>
+        /// Finds a property field by its binding path within the provided root element.
+        /// </summary>
         private static bool TryGetPropertyByPath(VisualElement root, string propertyPath, out PropertyField field)
         {
             field = root
