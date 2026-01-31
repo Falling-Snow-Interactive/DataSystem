@@ -44,14 +44,36 @@ namespace Fsi.DataSystem.Libraries
             List<TData> data = entries ?? new List<TData>();
             Object selectedValue = selected;
 
-            List<string> names = data.Select(entry => entry.ID.ToString()).ToList();
-            names.Insert(0, "None");
+            List<string> names = new() { "None" };
+            foreach (TData entry in data)
+            {
+                if (entry == null)
+                {
+                    names.Add("<Missing>");
+                }
+                else if (entry.ID == null)
+                {
+                    names.Add("<No ID>");
+                }
+                else
+                {
+                    names.Add(entry.ID.ToString());
+                }
+            }
 
             int selectedIndex = 0;
-            if (selectedValue && selectedValue is IData<TID> current)
+            if (selectedValue)
             {
-                int found = names.IndexOf(current.ID.ToString());
-                selectedIndex = found >= 0 ? found : 0;
+                int dataIndex = data.FindIndex(entry => ReferenceEquals(entry, selectedValue));
+                if (dataIndex >= 0)
+                {
+                    selectedIndex = dataIndex + 1;
+                }
+                else if (selectedValue is IData<TID> current && current.ID != null)
+                {
+                    int found = names.IndexOf(current.ID.ToString());
+                    selectedIndex = found >= 0 ? found : 0;
+                }
             }
 
             VisualElement root = new();
