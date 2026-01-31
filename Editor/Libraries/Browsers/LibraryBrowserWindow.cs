@@ -456,7 +456,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Builds columns using serialized properties from the first entry.
         /// </summary>
-        private void BuildColumnsFromSerializedProperties(float defaultWidth = 140f)
+        private void BuildColumnsFromSerializedProperties()
         {
             listView.columns.Clear();
             listView.columns.Add(CreateOpenColumn());
@@ -481,7 +481,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 }
 
                 Column column = CreateSerializedPropertyColumn(sampleEntry, iterator, GetLibraryMappingsByAttribute(), 
-                                                               GetLibraryMappingsByDataType(), defaultWidth);
+                                                               GetLibraryMappingsByDataType());
                 if (column != null)
                 {
                     listView.columns.Add(column);
@@ -535,7 +535,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                     return true;
                 }
 
-                if (field.GetCustomAttribute<HideInBrowserAttribute>() != null)
+                BrowserPropertyAttribute browserPropertyAttribute = field.GetCustomAttribute<BrowserPropertyAttribute>();
+                if (browserPropertyAttribute?.HideInBrowser == true)
                 {
                     return true;
                 }
@@ -550,8 +551,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         private Column CreateSerializedPropertyColumn(Object sampleEntry,
                                                       SerializedProperty property,
                                                       Dictionary<Type, LibraryMapping> libraryMappingsByAttribute,
-                                                      Dictionary<Type, LibraryMapping> libraryMappingsByDataType,
-                                                      float width)
+                                                      Dictionary<Type, LibraryMapping> libraryMappingsByDataType)
         {
             string propertyPath = property.propertyPath;
             string colTitle = property.displayName;
@@ -559,20 +559,34 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             TryGetFieldType(sampleEntry, propertyPath, out Type fieldType);
             TryGetFieldInfoFromPath(sampleEntry, propertyPath, out FieldInfo fieldInfo);
+            BrowserPropertyAttribute browserPropertyAttribute = fieldInfo?.GetCustomAttribute<BrowserPropertyAttribute>();
+
+            if (!string.IsNullOrWhiteSpace(browserPropertyAttribute?.DisplayName))
+            {
+                colTitle = browserPropertyAttribute.DisplayName;
+            }
+
+            float width = 140f;
+            bool resizable = true;
+            if (browserPropertyAttribute != null)
+            {
+                width = browserPropertyAttribute.Width;
+                resizable = browserPropertyAttribute.Resizable;
+            }
 
             if (HasListPopupAttribute(fieldInfo)) // && IsSerializedClassProperty(property, fieldType))
             {
-                return CreateSerializedClassPopupColumn(colTitle, width, propertyPath);
+                return CreateSerializedClassPopupColumn(colTitle, width, resizable, propertyPath);
             }
 
             switch (propertyType)
             {
                 case SerializedPropertyType.Enum when fieldType is { IsEnum: true }:
-                    return CreateEnumPropertyColumn(colTitle, width, propertyPath, fieldType);
+                    return CreateEnumPropertyColumn(colTitle, width, resizable, propertyPath, fieldType);
                 case SerializedPropertyType.Integer:
-                    return CreateIntegerPropertyColumn(colTitle, width, propertyPath);
+                    return CreateIntegerPropertyColumn(colTitle, width, resizable, propertyPath);
                 case SerializedPropertyType.Color:
-                    return CreateColorPropertyColumn(colTitle, width, propertyPath);
+                    return CreateColorPropertyColumn(colTitle, width, resizable, propertyPath);
                 case SerializedPropertyType.ObjectReference:
                 {
                     Type objectType = typeof(Object);
@@ -583,8 +597,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
                     return TryGetLibraryMapping(sampleEntry, propertyPath, fieldType, libraryMappingsByAttribute, 
                                                 libraryMappingsByDataType, out LibraryMapping mapping) 
-                               ? CreateLibraryPropertyColumn(colTitle, width, propertyPath, mapping) 
-                               : CreateObjectPropertyColumn(colTitle, width, propertyPath, objectType);
+                               ? CreateLibraryPropertyColumn(colTitle, width, resizable, propertyPath, mapping) 
+                               : CreateObjectPropertyColumn(colTitle, width, resizable, propertyPath, objectType);
                 }
                 case SerializedPropertyType.Generic:
                 case SerializedPropertyType.Boolean:
@@ -612,7 +626,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 case SerializedPropertyType.RenderingLayerMask:
                 case SerializedPropertyType.EntityId:
                 default:
-                    return CreatePropertyPathColumn(colTitle, width, propertyPath);
+                    return CreatePropertyPathColumn(colTitle, width, resizable, propertyPath);
             }
         }
 
@@ -621,18 +635,25 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// </summary>
         private static bool HasListPopupAttribute(FieldInfo fieldInfo)
         {
-            return fieldInfo != null && fieldInfo.GetCustomAttribute<BrowserPopupAttribute>() != null;
+            if (fieldInfo == null)
+            {
+                return false;
+            }
+
+            BrowserPropertyAttribute browserPropertyAttribute = fieldInfo.GetCustomAttribute<BrowserPropertyAttribute>();
+            return browserPropertyAttribute?.Popup == true;
         }
 
         /// <summary>
         /// Creates a column that opens a serialized class in a popup window.
         /// </summary>
-        private Column CreateSerializedClassPopupColumn(string title, float width, string propertyPath)
+        private Column CreateSerializedClassPopupColumn(string title, float width, bool resizable, string propertyPath)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new Button(),
                        bindCell = (element, index) =>
                                   {
@@ -681,12 +702,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column for enum fields with inline editing.
         /// </summary>
-        private Column CreateEnumPropertyColumn(string title, float width, string propertyPath, Type enumType)
+        private Column CreateEnumPropertyColumn(string title, float width, bool resizable, string propertyPath, Type enumType)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new EnumField(),
                        bindCell = (element, index) =>
                                   {
@@ -749,12 +771,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column for integer fields with inline editing.
         /// </summary>
-        private Column CreateIntegerPropertyColumn(string title, float width, string propertyPath)
+        private Column CreateIntegerPropertyColumn(string title, float width, bool resizable, string propertyPath)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new IntegerField(),
                        bindCell = (element, index) =>
                                   {
@@ -815,12 +838,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column for color fields with inline editing.
         /// </summary>
-        private Column CreateColorPropertyColumn(string title, float width, string propertyPath)
+        private Column CreateColorPropertyColumn(string title, float width, bool resizable, string propertyPath)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new ColorField(),
                        bindCell = (element, index) =>
                                   {
@@ -881,12 +905,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column for generic object reference fields.
         /// </summary>
-        private Column CreateObjectPropertyColumn(string title, float width, string propertyPath, Type objectType)
+        private Column CreateObjectPropertyColumn(string title, float width, bool resizable, string propertyPath, Type objectType)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new ObjectField
                                         {
                                             objectType = objectType
@@ -950,11 +975,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column for library-backed object references.
         /// </summary>
-        private Column CreateLibraryPropertyColumn(string title, float width, string propertyPath, LibraryMapping mapping)
+        private Column CreateLibraryPropertyColumn(string title, float width, bool resizable, string propertyPath, LibraryMapping mapping)
         {
             if (mapping?.IdType == null || mapping.DataType == null)
             {
-                return CreateObjectPropertyColumn(title, width, propertyPath, typeof(Object));
+                return CreateObjectPropertyColumn(title, width, resizable, propertyPath, typeof(Object));
             }
 
             MethodInfo methodInfo = GetType().GetMethod(nameof(CreateLibraryPropertyColumnInternal),
@@ -962,11 +987,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
             MethodInfo genericMethod = methodInfo?.MakeGenericMethod(mapping.IdType, mapping.DataType);
             if (genericMethod == null)
             {
-                return CreateObjectPropertyColumn(title, width, propertyPath, typeof(Object));
+                return CreateObjectPropertyColumn(title, width, resizable, propertyPath, typeof(Object));
             }
 
             Column column = genericMethod.Invoke(this, new object[] { title, width, propertyPath, mapping }) as Column;
-            return column ?? CreateObjectPropertyColumn(title, width, propertyPath, typeof(Object));
+            return column ?? CreateObjectPropertyColumn(title, width, resizable, propertyPath, typeof(Object));
         }
 
         /// <summary>
@@ -1050,12 +1075,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Creates a column that binds to a generic property field.
         /// </summary>
-        private Column CreatePropertyPathColumn(string title, float width, string propertyPath)
+        private Column CreatePropertyPathColumn(string title, float width, bool resizable, string propertyPath)
         {
             return new Column
                    {
                        title = title,
                        width = width,
+                       resizable = resizable,
                        makeCell = () => new VisualElement(),
                        bindCell = (element, index) =>
                                   {

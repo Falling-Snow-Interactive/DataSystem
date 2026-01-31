@@ -30,7 +30,7 @@ namespace Fsi.DataSystem
 
         [Header("Localization")]
 
-        [BrowserPopup]
+        [BrowserProperty(Popup = true, Width = 75f)]
         [SerializeField]
         private LocProperties loc;
         public LocProperties Loc => loc;
@@ -40,7 +40,6 @@ namespace Fsi.DataSystem
         [SerializeField]
         private Color color = Color.gray;
 
-        [FormerlySerializedAs("icon")]
         [SerializeField]
         private Sprite sprite;
 
@@ -85,7 +84,7 @@ namespace Fsi.DataSystem
             }
 
             return other is ScriptableData<T> so
-                && EqualityComparer<T>.Default.Equals(ID, so.ID);
+                   && EqualityComparer<T>.Default.Equals(ID, so.ID);
         }
 
         public override int GetHashCode()
