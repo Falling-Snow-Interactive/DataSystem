@@ -43,7 +43,7 @@ namespace Fsi.DataSystem
         /// <returns>The ID string.</returns>
         public override string ToString()
         {
-            string s = id.ToString();
+            string s = id == null ? string.Empty : id.ToString();
             return s;
         }
     }
