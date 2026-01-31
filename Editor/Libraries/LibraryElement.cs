@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -80,7 +79,11 @@ namespace Fsi.DataSystem.Libraries
             root.AddToClassList(RootClassName);
             Add(root);
 
-            DropdownField dropdown = new(names, selectedIndex) { label = label };
+            Label labelElement = new(label);
+            labelElement.AddToClassList("library-element__label");
+            root.Add(labelElement);
+
+            DropdownField dropdown = new(names, selectedIndex) { label = "" };
             dropdown.AddToClassList(DropdownClassName);
 
             dropdown.RegisterValueChangedCallback(_ =>

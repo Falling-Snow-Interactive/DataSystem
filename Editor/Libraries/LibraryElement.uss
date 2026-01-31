@@ -4,6 +4,19 @@
     flex-shrink: 0;
 }
 
+.library-element__label {
+    /*flex-grow: 1;*/
+    /*flex-shrink: 1;*/
+    
+    width: 40%;
+    margin: 0 0 0 3px;
+}
+
+.library-element__space {
+    /*flex-grow: 1;*/
+    /*flex-shrink: 1;*/
+}
+
 .library-element__dropdown {
     flex-grow: 1;
     flex-shrink: 0;
