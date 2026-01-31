@@ -28,6 +28,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
         private MultiColumnListView listView;
         private PopupField<string> libraryPopup;
+        private ToolbarButton addEntryButton;
         private ToolbarButton editScriptButton;
         private string initialLibraryPath;
         private int selectedIndex;
@@ -90,12 +91,17 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                       {
                                                           selectedIndex = libraryNames.IndexOf(evt.newValue);
                                                           RefreshEntries();
-                                                          UpdateEditScriptButtonState();
+                                                          UpdateToolbarButtonStates();
                                                       });
             toolbar.Add(libraryPopup);
             
             ToolbarSpacer s = new() { style = { flexGrow = 1, flexShrink = 0 } };
             toolbar.Add(s);
+            addEntryButton = new ToolbarButton(CreateNewEntry)
+                             {
+                                 text = "Add Entry",
+                             };
+            toolbar.Add(addEntryButton);
             ToolbarButton refreshButton = new(RefreshLibraries)
                                           {
                                               text = "Refresh",
@@ -106,7 +112,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                    text = "Edit Library Script",
                                };
             toolbar.Add(editScriptButton);
-            UpdateEditScriptButtonState();
+            UpdateToolbarButtonStates();
 
             rootVisualElement.Add(toolbar);
         }
@@ -168,7 +174,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             UpdateLibraryPopup();
             ApplyInitialSelection();
             RefreshEntries();
-            UpdateEditScriptButtonState();
+            UpdateToolbarButtonStates();
         }
 
         /// <summary>
@@ -282,7 +288,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             listView.itemsSource = entries;
             listView.Rebuild();
             listView.RefreshItems();
-            UpdateEditScriptButtonState();
+            UpdateToolbarButtonStates();
         }
 
         private LibraryDescriptor GetSelectedDescriptor()
@@ -323,7 +329,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             LibraryDescriptor descriptor = GetSelectedDescriptor();
             if (descriptor == null)
             {
-                UpdateEditScriptButtonState();
+                UpdateToolbarButtonStates();
                 return;
             }
 
@@ -336,7 +342,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                     Debug.LogWarning(warning);
                 }
 
-                UpdateEditScriptButtonState();
+                UpdateToolbarButtonStates();
                 return;
             }
 
@@ -378,7 +384,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             return null;
         }
 
-        private void UpdateEditScriptButtonState()
+        private void UpdateToolbarButtonStates()
         {
             if (editScriptButton == null)
             {
@@ -388,6 +394,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
             LibraryDescriptor descriptor = GetSelectedDescriptor();
             if (descriptor == null)
             {
+                if (addEntryButton != null)
+                {
+                    addEntryButton.SetEnabled(false);
+                }
+
                 editScriptButton.SetEnabled(false);
                 return;
             }
@@ -395,6 +406,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
             object library = descriptor.Getter?.Invoke();
             MonoScript script = GetScriptForLibrary(library, out _);
             editScriptButton.SetEnabled(script != null);
+
+            if (addEntryButton != null)
+            {
+                Type entryType = GetLibraryEntryType(descriptor.LibraryType);
+                bool canCreateEntry = entryType != null && typeof(ScriptableObject).IsAssignableFrom(entryType);
+                addEntryButton.SetEnabled(canCreateEntry);
+            }
         }
 
         #endregion
@@ -1253,6 +1271,126 @@ namespace Fsi.DataSystem.Libraries.Browsers
             AssetDatabase.SaveAssets();
         }
 
+        private void CreateNewEntry()
+        {
+            LibraryDescriptor descriptor = GetSelectedDescriptor();
+            if (descriptor == null)
+            {
+                return;
+            }
+
+            Type entryType = GetLibraryEntryType(descriptor.LibraryType);
+            if (entryType == null || !typeof(ScriptableObject).IsAssignableFrom(entryType))
+            {
+                EditorUtility.DisplayDialog("Unsupported Entry Type",
+                                            "This library does not support creating ScriptableObject entries.",
+                                            "OK");
+                return;
+            }
+
+            string defaultName = $"New {ObjectNames.NicifyVariableName(entryType.Name)}";
+            string path = EditorUtility.SaveFilePanelInProject("Create Library Entry",
+                                                               defaultName,
+                                                               "asset",
+                                                               "Choose a save location for the new library entry.");
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
+
+            if (AssetDatabase.LoadAssetAtPath<Object>(path) != null)
+            {
+                EditorUtility.DisplayDialog("Asset Already Exists",
+                                            $"An asset already exists at {path}.",
+                                            "OK");
+                return;
+            }
+
+            ScriptableObject newEntry = ScriptableObject.CreateInstance(entryType);
+            AssetDatabase.CreateAsset(newEntry, path);
+
+            if (!TryAddEntryToLibrary(descriptor, newEntry))
+            {
+                AssetDatabase.DeleteAsset(path);
+                EditorUtility.DisplayDialog("Unable to Add Entry",
+                                            "The library entries list could not be updated.",
+                                            "OK");
+                return;
+            }
+
+            MarkDirty(newEntry);
+            Object owner = descriptor.OwnerGetter?.Invoke();
+            if (owner != null)
+            {
+                MarkDirty(owner);
+            }
+
+            RefreshEntries();
+            SelectEntry(newEntry);
+            EditorGUIUtility.PingObject(newEntry);
+        }
+
+        private void SelectEntry(Object entry)
+        {
+            if (entry == null || listView == null)
+            {
+                return;
+            }
+
+            int index = entries.IndexOf(entry);
+            if (index < 0)
+            {
+                return;
+            }
+
+            listView.SetSelection(index);
+        }
+
+        private bool TryAddEntryToLibrary(LibraryDescriptor descriptor, Object entry)
+        {
+            if (descriptor == null || entry == null)
+            {
+                return false;
+            }
+
+            object library = descriptor.Getter?.Invoke();
+            if (library == null)
+            {
+                return false;
+            }
+
+            PropertyInfo entriesProperty = descriptor.LibraryType?.GetProperty("Entries");
+            if (entriesProperty?.GetValue(library) is not IList entryList)
+            {
+                return false;
+            }
+
+            entryList.Add(entry);
+            return true;
+        }
+
+        private static Type GetLibraryEntryType(Type libraryType)
+        {
+            if (libraryType == null)
+            {
+                return null;
+            }
+
+            Type current = libraryType;
+            while (current != null)
+            {
+                if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(Library<,>))
+                {
+                    Type[] args = current.GetGenericArguments();
+                    return args.Length > 1 ? args[1] : null;
+                }
+
+                current = current.BaseType;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Attempts to resolve the field type for a serialized property path.
         /// </summary>
@@ -1404,7 +1542,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                               var parent = parentGetter();
                                                               return parent == null ? null : localField.GetValue(parent);
                                                           },
-                                                          localField.FieldType));
+                                                          localField.FieldType,
+                                                          () => parentGetter() as Object));
                     continue;
                 }
 
