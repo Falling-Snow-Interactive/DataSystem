@@ -470,22 +470,49 @@ namespace Fsi.DataSystem.Libraries.Browsers
             SerializedObject serializedObject = new(sampleEntry);
             SerializedProperty iterator = serializedObject.GetIterator();
             bool enterChildren = true;
+            Dictionary<string, List<GroupedPropertyData>> groupedProperties = new(StringComparer.Ordinal);
 
             while (iterator.NextVisible(enterChildren))
             {
                 enterChildren = false;
+
+                TryGetFieldInfoFromPath(sampleEntry, iterator.propertyPath, out FieldInfo fieldInfo);
+                BrowserPropertyAttribute browserPropertyAttribute = fieldInfo?.GetCustomAttribute<BrowserPropertyAttribute>();
+                if (!string.IsNullOrWhiteSpace(browserPropertyAttribute?.Group))
+                {
+                    AddGroupedProperty(groupedProperties, browserPropertyAttribute.Group, iterator.Copy(), fieldInfo, browserPropertyAttribute);
+                    continue;
+                }
 
                 if (ShouldSkipProperty(iterator))
                 {
                     continue;
                 }
 
-                Column column = CreateSerializedPropertyColumn(sampleEntry, iterator, GetLibraryMappingsByAttribute(), 
+                Column column = CreateSerializedPropertyColumn(sampleEntry, iterator, GetLibraryMappingsByAttribute(),
                                                                GetLibraryMappingsByDataType());
                 if (column != null)
                 {
                     listView.columns.Add(column);
                 }
+            }
+
+            if (groupedProperties.Count == 0)
+            {
+                return;
+            }
+
+            List<GroupedColumnData> groupedColumns = new();
+            foreach ((string groupName, List<GroupedPropertyData> properties) in groupedProperties)
+            {
+                groupedColumns.Add(CreateGroupedColumnData(groupName, properties));
+            }
+
+            foreach (GroupedColumnData groupedColumn in groupedColumns
+                         .OrderBy(data => data.SortOrder)
+                         .ThenBy(data => data.GroupName, StringComparer.Ordinal))
+            {
+                listView.columns.Add(groupedColumn.Column);
             }
         }
 
@@ -537,6 +564,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
                 BrowserPropertyAttribute browserPropertyAttribute = field.GetCustomAttribute<BrowserPropertyAttribute>();
                 if (browserPropertyAttribute?.HideInBrowser == true)
+                {
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(browserPropertyAttribute?.Group))
                 {
                     return true;
                 }
@@ -628,6 +660,105 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 default:
                     return CreatePropertyPathColumn(colTitle, width, resizable, propertyPath);
             }
+        }
+
+        private static void AddGroupedProperty(Dictionary<string, List<GroupedPropertyData>> groupedProperties,
+                                               string groupName,
+                                               SerializedProperty property,
+                                               FieldInfo fieldInfo,
+                                               BrowserPropertyAttribute attribute)
+        {
+            if (!groupedProperties.TryGetValue(groupName, out List<GroupedPropertyData> properties))
+            {
+                properties = new List<GroupedPropertyData>();
+                groupedProperties[groupName] = properties;
+            }
+
+            properties.Add(new GroupedPropertyData(property, fieldInfo, attribute));
+        }
+
+        private GroupedColumnData CreateGroupedColumnData(string groupName, List<GroupedPropertyData> properties)
+        {
+            int sortOrder = int.MaxValue;
+            float? width = null;
+            bool? resizable = null;
+            const float defaultWidth = 140f;
+
+            foreach (GroupedPropertyData property in properties)
+            {
+                if (property.Attribute == null)
+                {
+                    continue;
+                }
+
+                sortOrder = Math.Min(sortOrder, property.Attribute.SortOrder);
+
+                if (width == null)
+                {
+                    width = property.Attribute.Width;
+                }
+                else if (!Mathf.Approximately(width.Value, property.Attribute.Width))
+                {
+                    width = defaultWidth;
+                }
+
+                if (resizable == null)
+                {
+                    resizable = property.Attribute.Resizable;
+                }
+                else if (resizable.Value != property.Attribute.Resizable)
+                {
+                    resizable = true;
+                }
+            }
+
+            Column column = CreateGroupedPopupColumn(groupName,
+                                                     width ?? defaultWidth,
+                                                     resizable ?? true,
+                                                     properties);
+            return new GroupedColumnData(groupName, sortOrder == int.MaxValue ? 0 : sortOrder, column);
+        }
+
+        private Column CreateGroupedPopupColumn(string groupName,
+                                                float width,
+                                                bool resizable,
+                                                IReadOnlyList<GroupedPropertyData> properties)
+        {
+            List<GroupedPropertyDefinition> definitions = properties
+                .Select(property => new GroupedPropertyDefinition(property.Property.propertyPath, property.DisplayName))
+                .ToList();
+
+            return new Column
+                   {
+                       title = groupName,
+                       width = width,
+                       resizable = resizable,
+                       makeCell = () => new Button(),
+                       bindCell = (element, index) =>
+                                  {
+                                      var button = (Button)element;
+                                      ClearButtonCallback(button);
+
+                                      if (!TryGetEntry(index, out Object data))
+                                      {
+                                          button.text = "Open";
+                                          button.SetEnabled(false);
+                                          return;
+                                      }
+
+                                      button.text = "Open";
+                                      button.SetEnabled(true);
+
+                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, groupName, definitions);
+                                      button.clicked += callback;
+                                      button.userData = callback;
+                                  },
+                       unbindCell = (element, _) =>
+                                    {
+                                        var button = (Button)element;
+                                        ClearButtonCallback(button);
+                                    }
+                   };
         }
 
         /// <summary>
@@ -1658,6 +1789,46 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             return fieldType.GetFields(FieldBindingFlags).Any(IsLibraryField);
+        }
+
+        private sealed class GroupedPropertyData
+        {
+            public GroupedPropertyData(SerializedProperty property, FieldInfo fieldInfo, BrowserPropertyAttribute attribute)
+            {
+                Property = property;
+                FieldInfo = fieldInfo;
+                Attribute = attribute;
+                DisplayName = ResolveDisplayName(property, attribute);
+            }
+
+            public SerializedProperty Property { get; }
+            public FieldInfo FieldInfo { get; }
+            public BrowserPropertyAttribute Attribute { get; }
+            public string DisplayName { get; }
+        }
+
+        private readonly struct GroupedColumnData
+        {
+            public GroupedColumnData(string groupName, int sortOrder, Column column)
+            {
+                GroupName = groupName;
+                SortOrder = sortOrder;
+                Column = column;
+            }
+
+            public string GroupName { get; }
+            public int SortOrder { get; }
+            public Column Column { get; }
+        }
+
+        private static string ResolveDisplayName(SerializedProperty property, BrowserPropertyAttribute attribute)
+        {
+            if (!string.IsNullOrWhiteSpace(attribute?.DisplayName))
+            {
+                return attribute.DisplayName;
+            }
+
+            return property?.displayName ?? string.Empty;
         }
     }
 }
