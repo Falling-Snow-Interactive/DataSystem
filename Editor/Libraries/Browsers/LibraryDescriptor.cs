@@ -1,4 +1,5 @@
 using System;
+using Object = UnityEngine.Object;
 
 namespace Fsi.DataSystem.Libraries.Browsers
 {
@@ -23,13 +24,19 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// Gets the library type for reflection lookups.
         /// </summary>
         public Type LibraryType { get; }
+
+        /// <summary>
+        /// Gets a delegate that resolves the object that owns the library.
+        /// </summary>
+        public Func<Object> OwnerGetter { get; }
             
-        public LibraryDescriptor(string displayName, string pathKey, Func<object> getter, Type libraryType)
+        public LibraryDescriptor(string displayName, string pathKey, Func<object> getter, Type libraryType, Func<Object> ownerGetter = null)
         {
             DisplayName = displayName;
             PathKey = pathKey;
             Getter = getter;
             LibraryType = libraryType;
+            OwnerGetter = ownerGetter;
         }
     }
 }
