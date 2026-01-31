@@ -121,7 +121,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         {
             listView = new MultiColumnListView
                        {
-                           reorderable = false,
+                           reorderable = true,
                            showBorder = true,
                            selectionType = SelectionType.Single,
                            sortingMode = ColumnSortingMode.Default,
@@ -131,6 +131,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                flexGrow = 1,
                            }
                        };
+            listView.itemIndexChanged += OnListItemIndexChanged;
 
             BuildColumnsFromSerializedProperties();
 
@@ -289,6 +290,39 @@ namespace Fsi.DataSystem.Libraries.Browsers
             listView.Rebuild();
             listView.RefreshItems();
             UpdateToolbarButtonStates();
+        }
+
+        private void OnListItemIndexChanged(int from, int to)
+        {
+            LibraryDescriptor descriptor = GetSelectedDescriptor();
+            if (descriptor == null)
+            {
+                return;
+            }
+
+            object library = descriptor.Getter?.Invoke();
+            if (library == null)
+            {
+                return;
+            }
+
+            PropertyInfo entriesProperty = descriptor.LibraryType.GetProperty("Entries");
+            if (entriesProperty?.GetValue(library) is not IList entryList)
+            {
+                return;
+            }
+
+            entryList.Clear();
+            foreach (Object entry in entries)
+            {
+                entryList.Add(entry);
+            }
+
+            Object owner = descriptor.OwnerGetter?.Invoke();
+            if (owner != null)
+            {
+                MarkDirty(owner);
+            }
         }
 
         private LibraryDescriptor GetSelectedDescriptor()
