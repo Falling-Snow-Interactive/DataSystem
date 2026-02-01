@@ -37,6 +37,11 @@ namespace Fsi.DataSystem.Libraries.Browsers
         public string Group { get; set; }
 
         /// <summary>
+        /// When true, the column is locked to the left side of the table.
+        /// </summary>
+        public bool Locked { get; set; } = false;
+
+        /// <summary>
         /// 
         /// </summary>
         public float Width { get; set; } = 140f;
