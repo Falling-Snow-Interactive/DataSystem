@@ -428,12 +428,21 @@ namespace Fsi.DataSystem.Libraries.Browsers
         private void BuildColumnsFromSerializedProperties()
         {
             listView.columns.Clear();
-            listView.columns.Add(CreateOpenColumn());
-            listView.columns.Add(CreateFileColumn());
+            List<Column> lockedColumns = new();
+            List<Column> unlockedColumns = new();
+
+            lockedColumns.Add(CreateOpenColumn());
+            lockedColumns.Add(CreateFileColumn());
 
             Object sampleEntry = GetFirstSerializedEntry();
             if (!sampleEntry)
             {
+                foreach (Column column in lockedColumns)
+                {
+                    listView.columns.Add(column);
+                }
+
+                listView.columns.fixedColumnCount = lockedColumns.Count;
                 return;
             }
 
@@ -463,13 +472,16 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                GetLibraryMappingsByDataType());
                 if (column != null)
                 {
-                    listView.columns.Add(column);
+                    bool isLocked = browserPropertyAttribute?.Locked == true;
+                    if (isLocked)
+                    {
+                        lockedColumns.Add(column);
+                    }
+                    else
+                    {
+                        unlockedColumns.Add(column);
+                    }
                 }
-            }
-
-            if (groupedProperties.Count == 0)
-            {
-                return;
             }
 
             List<GroupedColumnData> groupedColumns = new();
@@ -482,8 +494,27 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                         .OrderBy(data => data.SortOrder)
                                                         .ThenBy(data => data.GroupName, StringComparer.Ordinal))
             {
-                listView.columns.Add(groupedColumn.Column);
+                if (groupedColumn.Locked)
+                {
+                    lockedColumns.Add(groupedColumn.Column);
+                }
+                else
+                {
+                    unlockedColumns.Add(groupedColumn.Column);
+                }
             }
+
+            foreach (Column column in lockedColumns)
+            {
+                listView.columns.Add(column);
+            }
+
+            foreach (Column column in unlockedColumns)
+            {
+                listView.columns.Add(column);
+            }
+
+            listView.columns.fixedColumnCount = lockedColumns.Count;
         }
 
         private Object GetFirstSerializedEntry()
@@ -652,6 +683,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             int sortOrder = int.MaxValue;
             float? width = null;
             bool? resizable = null;
+            bool locked = false;
             const float defaultWidth = 140f;
 
             foreach (GroupedPropertyData property in properties)
@@ -662,6 +694,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 }
 
                 sortOrder = Math.Min(sortOrder, property.Attribute.SortOrder);
+                locked |= property.Attribute.Locked;
 
                 if (width == null)
                 {
@@ -686,7 +719,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                      width ?? defaultWidth,
                                                      resizable ?? true,
                                                      properties);
-            return new GroupedColumnData(groupName, sortOrder == int.MaxValue ? 0 : sortOrder, column);
+            return new GroupedColumnData(groupName, sortOrder == int.MaxValue ? 0 : sortOrder, column, locked);
         }
 
         private Column CreateGroupedPopupColumn(string groupName,
@@ -1816,16 +1849,18 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
         private readonly struct GroupedColumnData
         {
-            public GroupedColumnData(string groupName, int sortOrder, Column column)
+            public GroupedColumnData(string groupName, int sortOrder, Column column, bool locked)
             {
                 GroupName = groupName;
                 SortOrder = sortOrder;
                 Column = column;
+                Locked = locked;
             }
 
             public string GroupName { get; }
             public int SortOrder { get; }
             public Column Column { get; }
+            public bool Locked { get; }
         }
 
         private static string ResolveDisplayName(SerializedProperty property, BrowserPropertyAttribute attribute)
