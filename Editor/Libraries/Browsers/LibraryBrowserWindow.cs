@@ -429,6 +429,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         {
             listView.columns.Clear();
             listView.columns.Add(CreateOpenColumn());
+            listView.columns.Add(CreateFileColumn());
 
             Object sampleEntry = GetFirstSerializedEntry();
             if (!sampleEntry)
@@ -1280,6 +1281,38 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                     }
                    };
         }
+        
+        /// <summary>
+        /// Creates the leading column that opens an entry asset.
+        /// </summary>
+        private Column CreateFileColumn()
+        {
+            return new Column
+                   {
+                       title = "Filename",
+                       width = 150f,
+                       resizable = true,
+                       makeCell = () => new Label(""),
+                       bindCell = (element, index) =>
+                                  {
+                                      Label label = (Label)element;
+                                      if (!TryGetEntry(index, out Object entry))
+                                      {
+                                          label.SetEnabled(false);
+                                          label.text = "";
+                                          return;
+                                      }
+
+                                      label.SetEnabled(true);
+                                      label.text = $"{entry.name}";
+                                  },
+                       unbindCell = (element, _) =>
+                                    {
+                                        Label label = (Label)element;
+                                        label.text = "";
+                                    }
+                   };
+        }
 
         /// <summary>
         /// Creates a mapping wrapper for a library getter.
@@ -1449,14 +1482,19 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             string defaultName = $"New {ObjectNames.NicifyVariableName(entryType.Name)}";
+            string lastPath = EditorPrefs.GetString($"{entryType}_entry_path", "Assets");
             string path = EditorUtility.SaveFilePanelInProject("Create Library Entry",
                                                                defaultName,
                                                                "asset",
-                                                               "Choose a save location for the new library entry.");
+                                                               "Choose a save location for the new library entry.",
+                                                               lastPath);
+            
             if (string.IsNullOrWhiteSpace(path))
             {
                 return;
             }
+
+            EditorPrefs.SetString($"{entryType}_entry_path", path);
 
             if (AssetDatabase.LoadAssetAtPath<Object>(path) != null)
             {
