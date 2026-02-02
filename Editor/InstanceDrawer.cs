@@ -15,7 +15,13 @@ namespace Fsi.DataSystem
         /// </summary>
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            VisualElement root = new() { style = { flexGrow = 1, flexDirection = FlexDirection.Row } };
+            VisualElement root = new();
+            root.AddToClassList("fsi-instance-drawer");
+            StyleSheet stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Editor/InstanceDrawer.uss");
+            if (stylesheet != null)
+            {
+                root.styleSheets.Add(stylesheet);
+            }
 
             // Always work on a copy
             SerializedProperty iterator = property.Copy();
@@ -26,7 +32,8 @@ namespace Fsi.DataSystem
             while (!SerializedProperty.EqualContents(iterator, end))
             {
                 // Each field gets its own PropertyField and is appended into a horizontal row.
-                PropertyField field = new(iterator, string.Empty){style = { flexGrow = 1}};
+                PropertyField field = new(iterator, string.Empty);
+                field.AddToClassList("fsi-instance-drawer__field");
                 root.Add(field);
                 iterator.NextVisible(false);
             }
