@@ -77,6 +77,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
         {
             Toolbar toolbar = new();
 
+            selectedIndex = EditorPrefs.GetInt("Library_Index", 0);
+
             libraryPopup = new PopupField<string>("", libraryNames, selectedIndex)
                            {
                                style =
@@ -90,6 +92,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             libraryPopup.RegisterValueChangedCallback(evt =>
                                                       {
                                                           selectedIndex = libraryNames.IndexOf(evt.newValue);
+                                                          EditorPrefs.SetInt("Library_Index", selectedIndex);
                                                           RefreshEntries();
                                                           UpdateToolbarButtonStates();
                                                       });
