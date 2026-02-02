@@ -15,6 +15,7 @@ namespace Fsi.DataSystem
     {
         private const string OpenPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
         private const string HighlightPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Highlight_Icon.png";
+        private const string StylesheetPath = "Packages/com.fallingsnowinteractive.datasystem/Editor/ScriptableDataEditor.uss";
         
         [SerializeField]
         private Texture2D openTexture;
@@ -31,6 +32,12 @@ namespace Fsi.DataSystem
         public override VisualElement CreateInspectorGUI()
         {
             VisualElement root = new();
+
+            StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StylesheetPath);
+            if (styleSheet)
+            {
+                root.styleSheets.Add(styleSheet);
+            }
 
             toolbar = new Toolbar();
             root.Add(toolbar);
@@ -72,12 +79,8 @@ namespace Fsi.DataSystem
                                    {
                                        tooltip = tooltip,
                                        iconImage = icon,
-                                       
-                                       style =
-                                       {
-                                           height = new StyleLength(StyleKeyword.Auto),
-                                       }
                                    };
+            button.AddToClassList("scriptable-data-editor__toolbar-button");
             return button;
         }
         

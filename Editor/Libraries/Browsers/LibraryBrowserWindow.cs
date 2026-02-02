@@ -20,6 +20,13 @@ namespace Fsi.DataSystem.Libraries.Browsers
         protected const string LibraryIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Library_Icon.png";
         private const string AddIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Add_Icon.png";
         private const string RefreshIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Refresh_Icon.png";
+        private const string StyleSheetPath = "Packages/com.fallingsnowinteractive.datasystem/Editor/Libraries/Browsers/LibraryBrowserWindow.uss";
+
+        private const string ToolbarClassName = "library-browser__toolbar";
+        private const string PopupClassName = "library-browser__popup";
+        private const string SpacerClassName = "library-browser__spacer";
+        private const string ToolbarButtonClassName = "library-browser__toolbar-button";
+        private const string ListViewClassName = "library-browser__list-view";
 
         private static readonly BindingFlags FieldBindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
         private static readonly PropertyInfo IsTransientPropertyInfo = typeof(SerializedProperty).GetProperty("isTransient", BindingFlags.Instance | BindingFlags.Public);
@@ -57,6 +64,12 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// </summary>
         public void CreateGUI()
         {
+            StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StyleSheetPath);
+            if (styleSheet)
+            {
+                rootVisualElement.styleSheets.Add(styleSheet);
+            }
+
             rootVisualElement.style.flexDirection = FlexDirection.Column;
 
             BuildLibraryDescriptors();
@@ -77,19 +90,15 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
         private void BuildToolbar()
         {
-            Toolbar toolbar = new() { style = { height = 30f } };
+            Toolbar toolbar = new();
+            toolbar.AddToClassList(ToolbarClassName);
 
             selectedIndex = EditorPrefs.GetInt("Library_Index", 0);
 
             libraryPopup = new PopupField<string>("", libraryNames, selectedIndex)
                            {
-                               style =
-                               {
-                                   flexGrow = 1,
-                                   flexShrink = 0,
-                                   maxWidth = new StyleLength(225f),
-                               },
                            };
+            libraryPopup.AddToClassList(PopupClassName);
             
             libraryPopup.RegisterValueChangedCallback(evt =>
                                                       {
@@ -100,7 +109,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                       });
             toolbar.Add(libraryPopup);
             
-            ToolbarSpacer s = new() { style = { flexGrow = 1, flexShrink = 0, flexBasis = 1} };
+            ToolbarSpacer s = new();
+            s.AddToClassList(SpacerClassName);
             toolbar.Add(s);
             
             Texture2D refreshIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(RefreshIconPath);
@@ -108,14 +118,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                           {
                                               text = "",
                                               iconImage = refreshIcon,
-                                              style =
-                                              {
-                                                  flexGrow = 0,
-                                                  flexShrink = 1,
-                                     
-                                                  width = 30f,
-                                              },
                                           };
+            refreshButton.AddToClassList(ToolbarButtonClassName);
             toolbar.Add(refreshButton);
             
             Texture2D addIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AddIconPath);
@@ -123,14 +127,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                              {
                                  text = "",
                                  iconImage = addIcon,
-                                 style =
-                                 {
-                                     flexGrow = 0,
-                                     flexShrink = 1,
-                                     
-                                     width = 30f,
-                                 },
                              };
+            addEntryButton.AddToClassList(ToolbarButtonClassName);
             toolbar.Add(addEntryButton);
             
             UpdateToolbarButtonStates();
@@ -147,11 +145,10 @@ namespace Fsi.DataSystem.Libraries.Browsers
                            selectionType = SelectionType.Single,
                            sortingMode = ColumnSortingMode.Default,
                            showBoundCollectionSize = false,
-                           style =
-                           {
-                               flexGrow = 1,
-                           }
+                           
+                           style = {  }
                        };
+            listView.AddToClassList(ListViewClassName);
             listView.itemIndexChanged += OnListItemIndexChanged;
 
             BuildColumnsFromSerializedProperties();
@@ -715,9 +712,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             return new GroupedColumnData(groupName, sortOrder == int.MaxValue ? 0 : sortOrder, column);
         }
 
-        private Column CreateGroupedPopupColumn(string groupName,
-                                                float width,
-                                                bool resizable,
+        private Column CreateGroupedPopupColumn(string groupName, float width, bool resizable,
                                                 IReadOnlyList<GroupedPropertyData> properties)
         {
             List<GroupedPropertyDefinition> definitions = properties
@@ -745,7 +740,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                       button.text = "Open";
                                       button.SetEnabled(true);
 
-                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, groupName, definitions);
+                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, $"{data.name}: {groupName}", definitions);
                                       button.clicked += callback;
                                       button.userData = callback;
                                   },
@@ -804,15 +799,15 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                 return;
                                                             }
 
-                                                            var serializedObject = new SerializedObject(data);
+                                                            SerializedObject serializedObject = new(data);
                                                             serializedObject.Update();
-                                                            var property = serializedObject.FindProperty(propertyPath);
+                                                            SerializedProperty property = serializedObject.FindProperty(propertyPath);
                                                             if (property == null)
                                                             {
                                                                 return;
                                                             }
 
-                                                            SerializedClassPopupWindow.Show(data, propertyPath, property.displayName);
+                                                            SerializedClassPopupWindow.Show(data, propertyPath, $"{data.name}: {property.displayName}");
                                                         };
 
                                       button.clicked += callback;

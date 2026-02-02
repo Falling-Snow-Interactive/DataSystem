@@ -1,0 +1,25 @@
+.library-browser__toolbar {
+    height: 30px;
+}
+
+.library-browser__popup {
+    flex-grow: 1;
+    flex-shrink: 0;
+    max-width: 225px;
+}
+
+.library-browser__spacer {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 1px;
+}
+
+.library-browser__toolbar-button {
+    flex-grow: 0;
+    flex-shrink: 1;
+    width: 30px;
+}
+
+.library-browser__list-view {
+    flex-grow: 1;
+}
