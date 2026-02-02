@@ -145,6 +145,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
                            selectionType = SelectionType.Single,
                            sortingMode = ColumnSortingMode.Default,
                            showBoundCollectionSize = false,
+                           
+                           style = {  }
                        };
             listView.AddToClassList(ListViewClassName);
             listView.itemIndexChanged += OnListItemIndexChanged;

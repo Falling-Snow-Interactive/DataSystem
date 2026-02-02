@@ -34,7 +34,7 @@ namespace Fsi.DataSystem
             VisualElement root = new();
 
             StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(StylesheetPath);
-            if (styleSheet != null)
+            if (styleSheet)
             {
                 root.styleSheets.Add(styleSheet);
             }
