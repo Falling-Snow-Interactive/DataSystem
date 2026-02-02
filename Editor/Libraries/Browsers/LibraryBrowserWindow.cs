@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -95,9 +96,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
             selectedIndex = EditorPrefs.GetInt("Library_Index", 0);
 
-            libraryPopup = new PopupField<string>("", libraryNames, selectedIndex)
-                           {
-                           };
+            libraryPopup = new PopupField<string>("", libraryNames, selectedIndex);
             libraryPopup.AddToClassList(PopupClassName);
             
             libraryPopup.RegisterValueChangedCallback(evt =>
@@ -144,9 +143,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                            showBorder = true,
                            selectionType = SelectionType.Single,
                            sortingMode = ColumnSortingMode.Default,
-                           showBoundCollectionSize = false,
-                           
-                           style = {  }
+                           showBoundCollectionSize = false
                        };
             listView.AddToClassList(ListViewClassName);
             listView.itemIndexChanged += OnListItemIndexChanged;
@@ -376,6 +373,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             EditorGUIUtility.PingObject(entry);
         }
 
+        [UsedImplicitly]
         private static MonoScript GetScriptForLibrary(object library, out string warning)
         {
             warning = null;
@@ -1613,6 +1611,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
         /// <summary>
         /// Attempts to resolve the field type for a serialized property path.
         /// </summary>
+        [UsedImplicitly]
         private static bool TryGetFieldType(Object target, string propertyPath, out Type fieldType)
         {
             fieldType = null;
@@ -1830,6 +1829,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             }
 
             public SerializedProperty Property { get; }
+            [UsedImplicitly]
             public FieldInfo FieldInfo { get; }
             public BrowserPropertyAttribute Attribute { get; }
             public string DisplayName { get; }

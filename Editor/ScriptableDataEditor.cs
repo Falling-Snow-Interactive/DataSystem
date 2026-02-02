@@ -118,33 +118,5 @@ namespace Fsi.DataSystem
         }
         
         #endregion
-        
-        #region Helpers
-        
-        /// <summary>
-        /// Shows or hides a bound property field by its serialized path.
-        /// </summary>
-        private static void ShowPropertyByPath(bool show, VisualElement root, string propertyPath)
-        {
-            if (TryGetPropertyByPath(root, propertyPath, out PropertyField field))
-            {
-                field.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-        }
-        
-        /// <summary>
-        /// Finds a property field by its binding path within the provided root element.
-        /// </summary>
-        private static bool TryGetPropertyByPath(VisualElement root, string propertyPath, out PropertyField field)
-        {
-            field = root
-                    .Query<PropertyField>()
-                    .Where(p => p.bindingPath == propertyPath)
-                    .First();
-
-            return field != null;
-        }
-        
-        #endregion
     }
 }
