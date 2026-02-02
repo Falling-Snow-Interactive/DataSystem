@@ -10,6 +10,8 @@ namespace Fsi.DataSystem
     [CustomPropertyDrawer(typeof(Instance<,>))]
     public class InstanceDrawer : PropertyDrawer
     {
+        private const string USS = "Packages/com.fallingsnowinteractive.datasystem/Editor/InstanceDrawer.uss";
+        
         /// <summary>
         /// Builds a UI Toolkit field list for the instance wrapper.
         /// </summary>
@@ -17,7 +19,7 @@ namespace Fsi.DataSystem
         {
             VisualElement root = new();
             root.AddToClassList("fsi-instance-drawer");
-            StyleSheet stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Editor/InstanceDrawer.uss");
+            StyleSheet stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(USS);
             if (stylesheet != null)
             {
                 root.styleSheets.Add(stylesheet);
