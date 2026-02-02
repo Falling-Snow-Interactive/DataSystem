@@ -1,0 +1,3 @@
+.scriptable-data-editor__toolbar-button {
+    height: auto;
+}
