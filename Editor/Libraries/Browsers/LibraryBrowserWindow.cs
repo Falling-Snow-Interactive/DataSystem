@@ -712,9 +712,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
             return new GroupedColumnData(groupName, sortOrder == int.MaxValue ? 0 : sortOrder, column);
         }
 
-        private Column CreateGroupedPopupColumn(string groupName,
-                                                float width,
-                                                bool resizable,
+        private Column CreateGroupedPopupColumn(string groupName, float width, bool resizable,
                                                 IReadOnlyList<GroupedPropertyData> properties)
         {
             List<GroupedPropertyDefinition> definitions = properties
@@ -742,7 +740,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                       button.text = "Open";
                                       button.SetEnabled(true);
 
-                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, groupName, definitions);
+                                      Action callback = () => GroupedPropertyPopupWindow.Show(data, $"{data.name}: {groupName}", definitions);
                                       button.clicked += callback;
                                       button.userData = callback;
                                   },
@@ -801,15 +799,15 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                 return;
                                                             }
 
-                                                            var serializedObject = new SerializedObject(data);
+                                                            SerializedObject serializedObject = new(data);
                                                             serializedObject.Update();
-                                                            var property = serializedObject.FindProperty(propertyPath);
+                                                            SerializedProperty property = serializedObject.FindProperty(propertyPath);
                                                             if (property == null)
                                                             {
                                                                 return;
                                                             }
 
-                                                            SerializedClassPopupWindow.Show(data, propertyPath, property.displayName);
+                                                            SerializedClassPopupWindow.Show(data, propertyPath, $"{data.name}: {property.displayName}");
                                                         };
 
                                       button.clicked += callback;
