@@ -1,0 +1,8 @@
+.fsi-instance-drawer {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.fsi-instance-drawer__field {
+    flex-grow: 1;
+}
