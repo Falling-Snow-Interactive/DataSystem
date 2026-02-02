@@ -59,10 +59,10 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            var propertyField = new PropertyField(property)
-                                {
-                                    label = property.displayName
-                                };
+            PropertyField propertyField = new(property)
+                                          {
+                                              label = property.displayName
+                                          };
             propertyField.BindProperty(property);
 
             EventCallback<SerializedPropertyChangeEvent> callback = _ =>

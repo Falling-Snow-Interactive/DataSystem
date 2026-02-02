@@ -18,6 +18,8 @@ namespace Fsi.DataSystem.Libraries.Browsers
     {
         private const string OpenIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
         protected const string LibraryIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Library_Icon.png";
+        private const string AddIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Add_Icon.png";
+        private const string RefreshIconPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Refresh_Icon.png";
 
         private static readonly BindingFlags FieldBindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
         private static readonly PropertyInfo IsTransientPropertyInfo = typeof(SerializedProperty).GetProperty("isTransient", BindingFlags.Instance | BindingFlags.Public);
@@ -75,7 +77,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
 
         private void BuildToolbar()
         {
-            Toolbar toolbar = new();
+            Toolbar toolbar = new() { style = { height = 30f } };
 
             selectedIndex = EditorPrefs.GetInt("Library_Index", 0);
 
@@ -98,18 +100,39 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                       });
             toolbar.Add(libraryPopup);
             
-            ToolbarSpacer s = new() { style = { flexGrow = 1, flexShrink = 0 } };
+            ToolbarSpacer s = new() { style = { flexGrow = 1, flexShrink = 0, flexBasis = 1} };
             toolbar.Add(s);
-            addEntryButton = new ToolbarButton(CreateNewEntry)
-                             {
-                                 text = "Add Entry",
-                             };
-            toolbar.Add(addEntryButton);
+            
+            Texture2D refreshIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(RefreshIconPath);
             ToolbarButton refreshButton = new(RefreshLibraries)
                                           {
-                                              text = "Refresh",
+                                              text = "",
+                                              iconImage = refreshIcon,
+                                              style =
+                                              {
+                                                  flexGrow = 0,
+                                                  flexShrink = 1,
+                                     
+                                                  width = 30f,
+                                              },
                                           };
             toolbar.Add(refreshButton);
+            
+            Texture2D addIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(AddIconPath);
+            addEntryButton = new ToolbarButton(CreateNewEntry)
+                             {
+                                 text = "",
+                                 iconImage = addIcon,
+                                 style =
+                                 {
+                                     flexGrow = 0,
+                                     flexShrink = 1,
+                                     
+                                     width = 30f,
+                                 },
+                             };
+            toolbar.Add(addEntryButton);
+            
             UpdateToolbarButtonStates();
 
             rootVisualElement.Add(toolbar);
