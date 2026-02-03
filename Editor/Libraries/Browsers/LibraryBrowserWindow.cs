@@ -1311,24 +1311,71 @@ namespace Fsi.DataSystem.Libraries.Browsers
                        title = "Filename",
                        width = 150f,
                        resizable = true,
-                       makeCell = () => new Label(""),
+                       makeCell = () => new TextField
+                                        {
+                                            isDelayed = true,
+                                        },
                        bindCell = (element, index) =>
                                   {
-                                      Label label = (Label)element;
+                                      TextField field = (TextField)element;
+                                      ClearFieldCallback(field);
+
                                       if (!TryGetEntry(index, out Object entry))
                                       {
-                                          label.SetEnabled(false);
-                                          label.text = "";
+                                          field.SetEnabled(false);
+                                          field.SetValueWithoutNotify(string.Empty);
                                           return;
                                       }
 
-                                      label.SetEnabled(true);
-                                      label.text = $"{entry.name}";
+                                      field.SetEnabled(true);
+                                      field.SetValueWithoutNotify(entry.name);
+
+                                      EventCallback<ChangeEvent<string>> callback = evt =>
+                                                                                    {
+                                                                                        if (!entry)
+                                                                                        {
+                                                                                            return;
+                                                                                        }
+
+                                                                                        string newName = (evt.newValue ?? string.Empty).Trim();
+                                                                                        if (string.IsNullOrWhiteSpace(newName) || string.Equals(newName, entry.name, StringComparison.Ordinal))
+                                                                                        {
+                                                                                            // Revert any whitespace-only changes.
+                                                                                            field.SetValueWithoutNotify(entry.name);
+                                                                                            return;
+                                                                                        }
+
+                                                                                        string path = AssetDatabase.GetAssetPath(entry);
+                                                                                        if (string.IsNullOrWhiteSpace(path))
+                                                                                        {
+                                                                                            field.SetValueWithoutNotify(entry.name);
+                                                                                            return;
+                                                                                        }
+
+                                                                                        // Rename the asset on disk (also updates the object's name).
+                                                                                        string error = AssetDatabase.RenameAsset(path, newName);
+                                                                                        if (!string.IsNullOrWhiteSpace(error))
+                                                                                        {
+                                                                                            EditorUtility.DisplayDialog("Unable to Rename Asset", error, "OK");
+                                                                                            field.SetValueWithoutNotify(entry.name);
+                                                                                            return;
+                                                                                        }
+
+                                                                                        AssetDatabase.SaveAssets();
+                                                                                        field.SetValueWithoutNotify(entry.name);
+
+                                                                                        // Refresh the row display so other columns that depend on name update.
+                                                                                        listView?.RefreshItems();
+                                                                                    };
+
+                                      field.RegisterValueChangedCallback(callback);
+                                      field.userData = callback;
                                   },
                        unbindCell = (element, _) =>
                                     {
-                                        Label label = (Label)element;
-                                        label.text = "";
+                                        TextField field = (TextField)element;
+                                        ClearFieldCallback(field);
+                                        field.SetValueWithoutNotify(string.Empty);
                                     }
                    };
         }
