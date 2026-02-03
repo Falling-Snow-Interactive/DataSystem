@@ -1500,7 +1500,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            string defaultName = $"New {ObjectNames.NicifyVariableName(entryType.Name)}";
+            string defaultName = $"{descriptor.DisplayName}_";
             string lastPath = EditorPrefs.GetString($"{entryType}_entry_path", "Assets");
             string path = EditorUtility.SaveFilePanelInProject("Create Library Entry",
                                                                defaultName,
@@ -1523,7 +1523,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                 return;
             }
 
-            ScriptableObject newEntry = ScriptableObject.CreateInstance(entryType);
+            ScriptableObject newEntry = CreateInstance(entryType);
             AssetDatabase.CreateAsset(newEntry, path);
 
             if (!TryAddEntryToLibrary(descriptor, newEntry))
