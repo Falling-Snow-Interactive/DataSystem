@@ -124,6 +124,9 @@ namespace Fsi.DataSystem
         
         #endregion
 
-        public abstract ValidatorResult Validate();
+        public virtual ValidatorResult Validate()
+        {
+            return ValidatorResult.Fail("Not implemented");
+        }
     }
 }
