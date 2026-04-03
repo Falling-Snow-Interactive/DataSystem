@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.DataSystem.Libraries.Browsers;
 using Fsi.Localization;
+using Fsi.Ui.Dividers;
 using Fsi.Validation;
 using UnityEngine;
 
@@ -15,38 +16,46 @@ namespace Fsi.DataSystem
     public abstract class ScriptableData<T> : ScriptableObject, IData<T>, ISerializationCallbackReceiver
     {
         #region Inspector Fields
-        
+
         [Tooltip("Unique identifier for this data entry.")]
         [SerializeField]
         private T id;
-        
+
         /// <summary>
         /// Gets the unique identifier for this data entry.
         /// </summary>
         public virtual T ID => id;
 
+        #region Localization
+
         [Header("Localization")]
+
+        #region Name
 
         [BrowserProperty(Group = "Localization", DisplayName = "Name")]
         [InspectorName("Name"), Tooltip("Localization entry used to get the display name of this data entry.")]
         [SerializeField]
         private LocEntry locName;
-        
+
         /// <summary>
         /// Gets the localization entry for the display name.
         /// </summary>
         public LocEntry LocName => locName;
-        
+
         /// <summary>
         /// Gets the localized display name or a fallback string if missing.
         /// </summary>
         public string Name => LocName == null ? "no_loc_name" : LocName.GetLocalizedString("no_loc_name");
-        
+
+        #endregion
+
+        #region Description
+
         [BrowserProperty(Group = "Localization", DisplayName = "Description")]
         [InspectorName("Description"), Tooltip("Localized description text for this data entry.")]
         [SerializeField]
         private LocEntry locDesc;
-        
+
         /// <summary>
         /// Gets the localization entry for the description.
         /// </summary>
@@ -56,6 +65,26 @@ namespace Fsi.DataSystem
         /// Gets the localized description text or a fallback string if missing.
         /// </summary>
         public string Desc => LocDesc == null ? "no_loc_desc" : LocDesc.GetLocalizedString("no_loc_desc");
+
+        #endregion
+
+        #region Description Short
+
+        [BrowserProperty(Group = "Localization", DisplayName = "Description Short")]
+        [SerializeField]
+        private LocEntry locDescShort;
+
+        public LocEntry LocDescShort => locDescShort;
+
+        public string DescShort => LocDescShort == null
+                                       ? "no_loc_desc_short"
+                                       : locDescShort.GetLocalizedString("no_loc_desc_short");
+
+        #endregion
+
+        #endregion
+
+        #region Visuals
 
         [Header("Visuals")]
 
@@ -67,7 +96,9 @@ namespace Fsi.DataSystem
         [SerializeField]
         private Sprite sprite;
         public Sprite Sprite => sprite;
-
+        
+        #endregion
+        
         #endregion
         
         #region Equality & Operators
