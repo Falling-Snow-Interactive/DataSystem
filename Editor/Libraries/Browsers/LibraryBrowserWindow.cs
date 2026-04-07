@@ -1229,30 +1229,38 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                           return;
                                       }
 
-                                      PropertyField field = new()
-                                                            {
-                                                                label = string.Empty
-                                                            };
-                                      field.BindProperty(property);
+                                      IMGUIContainer field = new(() =>
+                                                                 {
+                                                                     if (!data)
+                                                                     {
+                                                                         return;
+                                                                     }
 
-                                      EventCallback<SerializedPropertyChangeEvent> callback = _ =>
-                                                                                              {
-                                                                                                  serializedObject.ApplyModifiedProperties();
-                                                                                                  MarkDirty(data);
-                                                                                              };
-                                      field.RegisterCallback(callback);
-                                      field.userData = callback;
+                                                                     serializedObject.UpdateIfRequiredOrScript();
+                                                                     SerializedProperty drawProperty = serializedObject.FindProperty(propertyPath);
+                                                                     if (drawProperty == null)
+                                                                     {
+                                                                         return;
+                                                                     }
+
+                                                                     Rect rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+                                                                     EditorGUI.BeginChangeCheck();
+                                                                     EditorGUI.PropertyField(rect, drawProperty, GUIContent.none, false);
+                                                                     if (EditorGUI.EndChangeCheck())
+                                                                     {
+                                                                         serializedObject.ApplyModifiedProperties();
+                                                                         MarkDirty(data);
+                                                                     }
+                                                                 })
+                                                             {
+                                                                 style =
+                                                                 {
+                                                                     height = EditorGUIUtility.singleLineHeight
+                                                                 }
+                                                             };
                                       element.Add(field);
                                   },
-                       unbindCell = (element, _) =>
-                                    {
-                                        if (element.childCount > 0 && element[0] is PropertyField field)
-                                        {
-                                            ClearPropertyFieldCallback(field);
-                                        }
-
-                                        element.Clear();
-                                    }
+                       unbindCell = (element, _) => element.Clear()
                    };
         }
 
@@ -1485,19 +1493,6 @@ namespace Fsi.DataSystem.Libraries.Browsers
             if (field.userData is EventCallback<ChangeEvent<TValue>> callback)
             {
                 field.UnregisterValueChangedCallback(callback);
-            }
-
-            field.userData = null;
-        }
-
-        /// <summary>
-        /// Removes a serialized property change callback from a PropertyField.
-        /// </summary>
-        private static void ClearPropertyFieldCallback(PropertyField field)
-        {
-            if (field.userData is EventCallback<SerializedPropertyChangeEvent> callback)
-            {
-                field.UnregisterCallback(callback);
             }
 
             field.userData = null;
