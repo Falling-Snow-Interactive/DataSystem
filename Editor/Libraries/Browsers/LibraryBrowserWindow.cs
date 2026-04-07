@@ -1244,9 +1244,7 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                                                      }
 
                                                                      Rect rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
-                                                                     EditorGUI.BeginChangeCheck();
-                                                                     EditorGUI.PropertyField(rect, drawProperty, GUIContent.none, false);
-                                                                     if (EditorGUI.EndChangeCheck())
+                                                                     if (DrawPropertyWithoutDecorators(rect, drawProperty))
                                                                      {
                                                                          serializedObject.ApplyModifiedProperties();
                                                                          MarkDirty(data);
@@ -1261,6 +1259,70 @@ namespace Fsi.DataSystem.Libraries.Browsers
                                       element.Add(field);
                                   },
                        unbindCell = (element, _) => element.Clear()
+                   };
+        }
+
+        private static bool DrawPropertyWithoutDecorators(Rect rect, SerializedProperty property)
+        {
+            EditorGUI.BeginChangeCheck();
+
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.Boolean:
+                    property.boolValue = EditorGUI.Toggle(rect, property.boolValue);
+                    break;
+                case SerializedPropertyType.Float:
+                    property.floatValue = EditorGUI.FloatField(rect, property.floatValue);
+                    break;
+                case SerializedPropertyType.String:
+                    property.stringValue = EditorGUI.TextField(rect, property.stringValue);
+                    break;
+                case SerializedPropertyType.Vector2:
+                    property.vector2Value = EditorGUI.Vector2Field(rect, GUIContent.none, property.vector2Value);
+                    break;
+                case SerializedPropertyType.Vector3:
+                    property.vector3Value = EditorGUI.Vector3Field(rect, GUIContent.none, property.vector3Value);
+                    break;
+                case SerializedPropertyType.Vector4:
+                    property.vector4Value = EditorGUI.Vector4Field(rect, GUIContent.none, property.vector4Value);
+                    break;
+                case SerializedPropertyType.Vector2Int:
+                    property.vector2IntValue = EditorGUI.Vector2IntField(rect, GUIContent.none, property.vector2IntValue);
+                    break;
+                case SerializedPropertyType.Vector3Int:
+                    property.vector3IntValue = EditorGUI.Vector3IntField(rect, GUIContent.none, property.vector3IntValue);
+                    break;
+                case SerializedPropertyType.Rect:
+                    property.rectValue = EditorGUI.RectField(rect, property.rectValue);
+                    break;
+                case SerializedPropertyType.RectInt:
+                    property.rectIntValue = EditorGUI.RectIntField(rect, property.rectIntValue);
+                    break;
+                case SerializedPropertyType.Bounds:
+                    property.boundsValue = EditorGUI.BoundsField(rect, property.boundsValue);
+                    break;
+                case SerializedPropertyType.BoundsInt:
+                    property.boundsIntValue = EditorGUI.BoundsIntField(rect, property.boundsIntValue);
+                    break;
+                default:
+                    EditorGUI.LabelField(rect, GetSingleLineValue(property));
+                    break;
+            }
+
+            return EditorGUI.EndChangeCheck();
+        }
+
+        private static string GetSingleLineValue(SerializedProperty property)
+        {
+            return property.propertyType switch
+                   {
+                       SerializedPropertyType.Generic => "—",
+                       SerializedPropertyType.AnimationCurve => property.animationCurveValue != null ? "AnimationCurve" : "None",
+                       SerializedPropertyType.Quaternion => property.quaternionValue.eulerAngles.ToString(),
+                       SerializedPropertyType.LayerMask => property.intValue.ToString(),
+                       SerializedPropertyType.Character => ((char)property.intValue).ToString(),
+                       SerializedPropertyType.Hash128 => property.hash128Value.ToString(),
+                       _ => property.displayName
                    };
         }
 
