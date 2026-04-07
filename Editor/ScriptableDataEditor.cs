@@ -10,7 +10,7 @@ namespace Fsi.DataSystem
     /// Adds quick action buttons for ScriptableData assets (popout and select).
     /// </summary>
     [CanEditMultipleObjects]
-    // [CustomEditor(typeof(ScriptableData<>), true)]
+    [CustomEditor(typeof(ScriptableData<>), true)]
     public class ScriptableDataEditor : Editor
     {
         private const string OpenPath = "Packages/com.fallingsnowinteractive.datasystem/Assets/Icons/Open_Icon.png";
