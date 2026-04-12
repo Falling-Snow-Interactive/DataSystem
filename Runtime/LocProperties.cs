@@ -41,7 +41,7 @@ namespace Fsi.DataSystem
                     return "no_loc_name";
                 }
 
-                return LocName.GetLocalizedString("no_loc_name");
+                return LocName.GetLocalizedString();
             }
         }
         
@@ -58,7 +58,7 @@ namespace Fsi.DataSystem
                     return "no_loc_desc";
                 }
 
-                return LocDesc.GetLocalizedString("no_loc_desc");
+                return LocDesc.GetLocalizedString();
             }
         }
     }

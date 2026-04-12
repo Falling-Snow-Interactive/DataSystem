@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.DataSystem.Libraries.Browsers;
 using Fsi.Localization;
-using Fsi.Ui.Dividers;
 using Fsi.Validation;
 using UnityEngine;
 
@@ -24,7 +23,11 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the unique identifier for this data entry.
         /// </summary>
-        public virtual T ID => id;
+        public virtual T ID
+        {
+            get => id;
+            set => id = value;
+        }
 
         #region Localization
 
@@ -40,12 +43,16 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the localization entry for the display name.
         /// </summary>
-        public LocEntry LocName => locName;
+        public LocEntry LocName
+        {
+            get => locName;
+            set => locName = value;
+        }
 
         /// <summary>
         /// Gets the localized display name or a fallback string if missing.
         /// </summary>
-        public string Name => LocName == null ? "no_loc_name" : LocName.GetLocalizedString("no_loc_name");
+        public string Name => LocName.GetLocalizedString();
 
         #endregion
 
@@ -59,12 +66,16 @@ namespace Fsi.DataSystem
         /// <summary>
         /// Gets the localization entry for the description.
         /// </summary>
-        public LocEntry LocDesc => locDesc;
+        public LocEntry LocDesc
+        {
+            get => locDesc;
+            set => locDesc = value;
+        }
 
         /// <summary>
         /// Gets the localized description text or a fallback string if missing.
         /// </summary>
-        public string Desc => LocDesc == null ? "no_loc_desc" : LocDesc.GetLocalizedString("no_loc_desc");
+        public string Desc => LocDesc.GetLocalizedString();
 
         #endregion
 
@@ -73,12 +84,8 @@ namespace Fsi.DataSystem
         [BrowserProperty(Group = "Localization", DisplayName = "Description Short")]
         [SerializeField]
         private LocEntry locDescShort;
-
         public LocEntry LocDescShort => locDescShort;
-
-        public string DescShort => LocDescShort == null
-                                       ? "no_loc_desc_short"
-                                       : locDescShort.GetLocalizedString("no_loc_desc_short");
+        public string DescShort => locDescShort.GetLocalizedString();
 
         #endregion
 
@@ -95,7 +102,11 @@ namespace Fsi.DataSystem
 
         [SerializeField]
         private Sprite sprite;
-        public Sprite Sprite => sprite;
+        public Sprite Sprite
+        {
+            get => sprite;
+            set => sprite = value;
+        }
         
         #endregion
         
