@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Fsi.DataSystem.Libraries;
 using Fsi.DataSystem.Libraries.Browsers;
 using Fsi.Localization;
-using Fsi.Validation;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Fsi.DataSystem
 {
@@ -12,7 +12,7 @@ namespace Fsi.DataSystem
     /// in data-driven systems and selectors.
     /// </summary>
     /// <typeparam name="T">Type used to ID the data objects.</typeparam>
-    public abstract class ScriptableData<T> : ScriptableObject, IData<T>, ISerializationCallbackReceiver
+    public abstract class ScriptableData<T> : ScriptableObject, IData<T>
     {
         #region Inspector Fields
 
@@ -27,6 +27,16 @@ namespace Fsi.DataSystem
         {
             get => id;
             set => id = value;
+        }
+
+        [FormerlySerializedAs("editor")]
+        [Tooltip("Non-unique identifier for editor use (Ex: logging, filenames).")]
+        [SerializeField]
+        private string @internal;
+        public string Internal
+        {
+            get => @internal;
+            set => @internal = value;
         }
 
         #region Localization
@@ -82,6 +92,7 @@ namespace Fsi.DataSystem
         #region Description Short
 
         [BrowserProperty(Group = "Localization", DisplayName = "Description Short")]
+        [InspectorName("Short Description"), Tooltip("Localized description text for this data entry.")]
         [SerializeField]
         private LocEntry locDescShort;
         public LocEntry LocDescShort => locDescShort;
@@ -141,34 +152,14 @@ namespace Fsi.DataSystem
                    && EqualityComparer<T>.Default.Equals(ID, so.ID);
         }
 
-        public override int GetHashCode()
-            => ID is null ? base.GetHashCode() : EqualityComparer<T>.Default.GetHashCode(ID);
+        public override int GetHashCode() => ID is null ? base.GetHashCode() : EqualityComparer<T>.Default.GetHashCode(ID);
 
-        #endregion
-        
-        #region Unity / Serialization
-
-        public void OnBeforeSerialize()
-        {
-            // name = ToString();
-        }
-
-        public void OnAfterDeserialize() { }
-        
         #endregion
         
         #region Object Overrides
-        
-        public override string ToString()
-        {
-            return ID == null ? "None" :  ID.ToString();
-        }
+
+        public override string ToString() => !string.IsNullOrWhiteSpace(@internal) ? Internal : id.ToString();
         
         #endregion
-
-        public virtual ValidatorResult Validate()
-        {
-            return ValidatorResult.Fail("Not implemented");
-        }
     }
 }

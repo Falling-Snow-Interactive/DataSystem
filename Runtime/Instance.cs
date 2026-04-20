@@ -1,6 +1,5 @@
 using System;
 using Fsi.DataSystem.Libraries;
-using Fsi.Validation;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -43,7 +42,5 @@ namespace Fsi.DataSystem
         /// Called after Unity deserializes the instance.
         /// </summary>
         public void OnAfterDeserialize() { }
-
-        public abstract ValidatorResult Validate();
     }
 }

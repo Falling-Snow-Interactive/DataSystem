@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Fsi.Validation;
 using UnityEngine;
 
 namespace Fsi.DataSystem.Libraries
@@ -153,24 +152,6 @@ namespace Fsi.DataSystem.Libraries
             }
 
             throw new KeyNotFoundException($"Library | Default ID '{defaultID}' was not found in entries.");
-        }
-
-        public ValidatorResult Validate()
-        {
-            ValidatorResult results = new(true, $"Validating {typeof(TID)} Library:");
-
-            bool duplicateCheck = !HasDuplicates();
-            results.Message += "\n\t" + "Duplicates: " + (duplicateCheck ? "PASS" : "FAILL");
-            results.Passed &= duplicateCheck;
-
-            foreach (TEntry e in entries)
-            {
-                ValidatorResult r = e.Validate();
-                results.Message += "\n\n" + r.Message;
-                results.Passed &= r.Passed;
-            }
-            
-            return results;
         }
     }
 }

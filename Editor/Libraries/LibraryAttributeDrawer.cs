@@ -47,7 +47,7 @@ namespace Fsi.DataSystem.Libraries
 
             // Build options: "None" + IDs
             List<string> names = new(data.Count + 1) { "None" };
-            names.AddRange(data.Select(t => t ? t.ID.ToString() : "<Missing>"));
+            names.AddRange(data.Select(t => t ? t.ToString() : "<Missing>"));
 
             // Current selection
             int selectedIndex = 0;

@@ -1,5 +1,3 @@
-using Fsi.Validation;
-
 namespace Fsi.DataSystem.Libraries
 {
 	/// <summary>
@@ -13,10 +11,6 @@ namespace Fsi.DataSystem.Libraries
 		/// </summary>
 		public T ID { get; }
 
-		#if UNITY_EDITOR
-
-		public ValidatorResult Validate();
-
-		#endif
+		public string ToString();
 	}
 }

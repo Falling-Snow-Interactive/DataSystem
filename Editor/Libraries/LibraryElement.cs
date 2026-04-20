@@ -56,7 +56,7 @@ namespace Fsi.DataSystem.Libraries
                 }
                 else
                 {
-                    names.Add(entry.ID.ToString());
+                    names.Add(entry.ToString());
                 }
             }
 
