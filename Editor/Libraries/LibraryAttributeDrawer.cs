@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -32,8 +34,12 @@ namespace Fsi.DataSystem.Libraries
         /// <summary>
         /// Returns the height of the IMGUI popup row.
         /// </summary>
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => EditorGUIUtility.singleLineHeight;
-        
+        public override float GetPropertyHeight([NotNull] SerializedProperty property, GUIContent label)
+        {
+            if (property == null) throw new ArgumentNullException(nameof(property));
+            return EditorGUIUtility.singleLineHeight;
+        }
+
         /// <summary>
         /// Draws the IMGUI fallback for the library selector.
         /// </summary>

@@ -81,7 +81,7 @@ namespace Fsi.DataSystem.Libraries
 
             if (!string.IsNullOrWhiteSpace(label))
             {
-                Label labelElement = new(label);
+                Label labelElement = new(label){style = { unityTextAlign = TextAnchor.MiddleLeft}};
                 labelElement.AddToClassList("library-element__label");
                 root.Add(labelElement);
             }
